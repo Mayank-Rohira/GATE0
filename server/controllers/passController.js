@@ -1,0 +1,164 @@
+const db = require('../database/db');
+
+function generatePassCode() {
+    const num = Math.floor(100000 + Math.random() * 900000);
+    return `PASS_${num}`;
+}
+
+function createPass(req, res) {
+    const { service_name, visitor_name, visitor_mobile } = req.body;
+
+    if (!service_name || !visitor_name || !visitor_mobile) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    let passCode = generatePassCode();
+    while (db.prepare('SELECT id FROM passes WHERE pass_code = ?').get(passCode)) {
+        passCode = generatePassCode();
+    }
+
+    const result = db.prepare(
+        `INSERT INTO passes (pass_code, resident_id, visitor_mobile, visitor_name, service_name, house_number, society_name)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+        passCode, req.user.id, visitor_mobile, visitor_name,
+        service_name, req.user.house_number, req.user.society_name
+    );
+
+    const pass = db.prepare('SELECT * FROM passes WHERE id = ?').get(result.lastInsertRowid);
+
+    // Create a rich JSON schema for the QR Code to allow instant scanning
+    const qrPayload = {
+        id: passCode,
+        visitor_name: pass.visitor_name,
+        visitor_mobile: pass.visitor_mobile,
+        service_name: pass.service_name,
+        resident_name: req.user.name,
+        resident_mobile: req.user.mobile,
+        house_number: pass.house_number,
+        society_name: pass.society_name,
+    };
+
+    res.status(201).json({ pass_code: passCode, qr_content: JSON.stringify(qrPayload), pass });
+}
+
+function getResidentPasses(req, res) {
+    const residentId = parseInt(req.params.resident_id, 10);
+
+    if (residentId !== req.user.id) {
+        return res.status(403).json({ error: 'Cannot view other resident passes' });
+    }
+
+    const passes = db.prepare(
+        'SELECT * FROM passes WHERE resident_id = ? ORDER BY created_at DESC'
+    ).all(residentId);
+
+    res.json({ passes });
+}
+
+function getVisitorPasses(req, res) {
+    const { mobile } = req.params;
+
+    if (mobile !== req.user.mobile) {
+        return res.status(403).json({ error: 'Cannot view other visitor passes' });
+    }
+
+    const passes = db.prepare(
+        `SELECT p.*, u.name AS resident_name
+     FROM passes p
+     JOIN users u ON u.id = p.resident_id
+     WHERE p.visitor_mobile = ?
+     ORDER BY p.created_at DESC`
+    ).all(mobile);
+
+    res.json({ passes });
+}
+
+function validatePass(req, res) {
+    const { pass_code } = req.body;
+
+    if (!pass_code) {
+        return res.status(400).json({ error: 'Missing pass_code' });
+    }
+
+    const pass = db.prepare(
+        `SELECT p.*, u.name AS resident_name
+     FROM passes p
+     JOIN users u ON u.id = p.resident_id
+     WHERE p.pass_code = ?`
+    ).get(pass_code);
+
+    if (!pass) {
+        return res.status(404).json({ valid: false, error: 'Pass not found' });
+    }
+
+    if (pass.status === 'approved') {
+        return res.status(410).json({ valid: false, error: 'Pass already used' });
+    }
+
+    res.json({ valid: true, pass });
+}
+
+function approvePass(req, res) {
+    const { pass_code } = req.body;
+
+    if (!pass_code) {
+        return res.status(400).json({ error: 'Missing pass_code' });
+    }
+
+    const pass = db.prepare(
+        `SELECT p.*, u.name AS resident_name
+     FROM passes p
+     JOIN users u ON u.id = p.resident_id
+     WHERE p.pass_code = ?`
+    ).get(pass_code);
+
+    if (!pass) {
+        return res.status(404).json({ error: 'Pass not found' });
+    }
+
+    if (pass.status === 'approved') {
+        return res.status(409).json({ error: 'Pass already approved' });
+    }
+
+    db.prepare('UPDATE passes SET status = ? WHERE id = ?').run('approved', pass.id);
+
+    const logResult = db.prepare(
+        `INSERT INTO guard_logs (pass_id, guard_id, visitor_name, visitor_mobile, resident_name, house_number, society_name)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+        pass.id, req.user.id, pass.visitor_name, pass.visitor_mobile,
+        pass.resident_name, pass.house_number, pass.society_name
+    );
+
+    res.json({
+        message: 'Entry approved',
+        log_id: logResult.lastInsertRowid,
+        timestamp: new Date().toISOString()
+    });
+}
+
+function denyPass(req, res) {
+    const { pass_code } = req.body;
+
+    if (!pass_code) {
+        return res.status(400).json({ error: 'Missing pass_code' });
+    }
+
+    // Because it's a hard delete, we check if it exists or was already approved
+    const pass = db.prepare('SELECT id, status FROM passes WHERE pass_code = ?').get(pass_code);
+
+    if (!pass) {
+        return res.status(404).json({ error: 'Pass not found' });
+    }
+
+    if (pass.status === 'approved') {
+        return res.status(409).json({ error: 'Cannot deny an already approved pass' });
+    }
+
+    db.prepare('DELETE FROM passes WHERE id = ?').run(pass.id);
+
+    res.json({ message: 'Pass denied and deleted successfully' });
+}
+
+module.exports = { createPass, getResidentPasses, getVisitorPasses, validatePass, approvePass, denyPass };

@@ -1,0 +1,18 @@
+{
+    "name": "gate0-server",
+    "version": "1.0.0",
+    "description": "GATE0 — Gated community access management backend",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "better-sqlite3": "^11.8.1",
+        "cors": "^2.8.6",
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "jsonwebtoken": "^9.0.2",
+        "qrcode": "^1.5.4"
+    }
+}
