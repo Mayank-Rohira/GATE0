@@ -63,13 +63,14 @@ function getVisitorPasses(req, res) {
         return res.status(403).json({ error: 'Cannot view other visitor passes' });
     }
 
+    // Filter by both mobile AND name to ensure accurate assignment
     const passes = db.prepare(
         `SELECT p.*, u.name AS resident_name
      FROM passes p
      JOIN users u ON u.id = p.resident_id
-     WHERE p.visitor_mobile = ?
+     WHERE p.visitor_mobile = ? AND LOWER(p.visitor_name) = LOWER(?)
      ORDER BY p.created_at DESC`
-    ).all(mobile);
+    ).all(mobile, req.user.name);
 
     res.json({ passes });
 }
