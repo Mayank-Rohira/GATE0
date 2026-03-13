@@ -8,7 +8,7 @@ const {
 const router = express.Router();
 
 router.post('/passes/create', authenticateToken, authorizeRole('resident'), createPass);
-router.get('/passes/resident/:resident_id', authenticateToken, authorizeRole('resident'), getResidentPasses);
+router.get('/passes/resident/:mobile', authenticateToken, authorizeRole('resident'), getResidentPasses);
 router.get('/passes/visitor/:mobile', authenticateToken, authorizeRole('visitor'), getVisitorPasses);
 router.post('/passes/validate', authenticateToken, authorizeRole('guard'), validatePass);
 router.post('/passes/approve', authenticateToken, authorizeRole('guard'), approvePass);

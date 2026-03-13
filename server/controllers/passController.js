@@ -1,4 +1,5 @@
 const db = require('../database/db');
+const { normalizeMobile } = require('../utils/utils');
 
 function generatePassCode() {
     const num = Math.floor(100000 + Math.random() * 900000);
@@ -6,7 +7,8 @@ function generatePassCode() {
 }
 
 function createPass(req, res) {
-    const { service_name, visitor_name, visitor_mobile } = req.body;
+    const { service_name, visitor_name, visitor_mobile: rawMobile } = req.body;
+    const visitor_mobile = normalizeMobile(rawMobile);
 
     if (!service_name || !visitor_name || !visitor_mobile) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -18,10 +20,10 @@ function createPass(req, res) {
     }
 
     const result = db.prepare(
-        `INSERT INTO passes (pass_code, resident_id, visitor_mobile, visitor_name, service_name, house_number, society_name)
+        `INSERT INTO passes (pass_code, resident_mobile, visitor_mobile, visitor_name, service_name, house_number, society_name)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(
-        passCode, req.user.id, visitor_mobile, visitor_name,
+        passCode, req.user.mobile, visitor_mobile, visitor_name,
         service_name, req.user.house_number, req.user.society_name
     );
 
@@ -43,34 +45,35 @@ function createPass(req, res) {
 }
 
 function getResidentPasses(req, res) {
-    const residentId = parseInt(req.params.resident_id, 10);
+    const { mobile } = req.params;
 
-    if (residentId !== req.user.id) {
+    if (mobile !== req.user.mobile) {
         return res.status(403).json({ error: 'Cannot view other resident passes' });
     }
 
     const passes = db.prepare(
-        'SELECT * FROM passes WHERE resident_id = ? ORDER BY created_at DESC'
-    ).all(residentId);
+        'SELECT * FROM passes WHERE resident_mobile = ? ORDER BY created_at DESC'
+    ).all(mobile);
 
     res.json({ passes });
 }
 
 function getVisitorPasses(req, res) {
-    const { mobile } = req.params;
+    const { mobile: rawMobile } = req.params;
+    const mobile = normalizeMobile(rawMobile);
 
-    if (mobile !== req.user.mobile) {
+    if (mobile !== normalizeMobile(req.user.mobile)) {
         return res.status(403).json({ error: 'Cannot view other visitor passes' });
     }
 
-    // Filter by both mobile AND name to ensure accurate assignment
+    // PURE MOBILE LINKING: If it's your number, it's your pass.
     const passes = db.prepare(
         `SELECT p.*, u.name AS resident_name
      FROM passes p
-     JOIN users u ON u.id = p.resident_id
-     WHERE p.visitor_mobile = ? AND LOWER(p.visitor_name) = LOWER(?)
+     JOIN users u ON u.mobile = p.resident_mobile
+     WHERE p.visitor_mobile = ?
      ORDER BY p.created_at DESC`
-    ).all(mobile, req.user.name);
+    ).all(mobile);
 
     res.json({ passes });
 }
@@ -85,7 +88,7 @@ function validatePass(req, res) {
     const pass = db.prepare(
         `SELECT p.*, u.name AS resident_name
      FROM passes p
-     JOIN users u ON u.id = p.resident_id
+     JOIN users u ON u.mobile = p.resident_mobile
      WHERE p.pass_code = ?`
     ).get(pass_code);
 
@@ -110,7 +113,7 @@ function approvePass(req, res) {
     const pass = db.prepare(
         `SELECT p.*, u.name AS resident_name
      FROM passes p
-     JOIN users u ON u.id = p.resident_id
+     JOIN users u ON u.mobile = p.resident_mobile
      WHERE p.pass_code = ?`
     ).get(pass_code);
 
@@ -128,7 +131,7 @@ function approvePass(req, res) {
         `INSERT INTO guard_logs (pass_id, guard_id, visitor_name, visitor_mobile, resident_name, house_number, society_name)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(
-        pass.id, req.user.id, pass.visitor_name, pass.visitor_mobile,
+        pass.id, req.user.mobile, pass.visitor_name, pass.visitor_mobile,
         pass.resident_name, pass.house_number, pass.society_name
     );
 

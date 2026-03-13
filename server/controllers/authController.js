@@ -1,11 +1,13 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../database/db');
+const { normalizeMobile } = require('../utils/utils');
 
 const SALT_ROUNDS = 10;
 
 async function signup(req, res) {
-    const { name, mobile, password, role, house_number, society_name } = req.body;
+    const { name, mobile: rawMobile, password, role, house_number, society_name } = req.body;
+    const mobile = normalizeMobile(rawMobile);
 
     if (!name || !mobile || !password || !role) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -42,7 +44,8 @@ async function signup(req, res) {
 }
 
 async function login(req, res) {
-    const { mobile, password } = req.body;
+    const { mobile: rawMobile, password } = req.body;
+    const mobile = normalizeMobile(rawMobile);
 
     if (!mobile || !password) {
         return res.status(400).json({ error: 'Missing fields' });
@@ -60,7 +63,6 @@ async function login(req, res) {
         }
 
         const payload = {
-            id: user.id,
             name: user.name,
             mobile: user.mobile,
             role: user.role,
@@ -73,8 +75,8 @@ async function login(req, res) {
         res.json({
             token,
             user: {
-                id: user.id,
                 name: user.name,
+                mobile: user.mobile,
                 role: user.role,
                 house_number: user.house_number,
                 society_name: user.society_name
