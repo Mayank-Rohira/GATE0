@@ -1,9 +1,9 @@
 const db = require('../database/db');
 
 function getGuardLogs(req, res) {
-    const guardId = parseInt(req.params.guard_id, 10);
+    const guardMobile = req.params.guard_id; // Keeping param name as guard_id for route compatibility but using as mobile
 
-    if (guardId !== req.user.id) {
+    if (guardMobile !== req.user.mobile) {
         return res.status(403).json({ error: 'Cannot view other guard logs' });
     }
 
@@ -11,7 +11,7 @@ function getGuardLogs(req, res) {
     const maxResults = parseInt(limit, 10) || 100;
 
     let query = 'SELECT * FROM guard_logs WHERE guard_id = ?';
-    const params = [guardId];
+    const params = [guardMobile];
 
     if (date) {
         query += " AND DATE(timestamp) = ?";
