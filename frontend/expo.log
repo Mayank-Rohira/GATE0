@@ -1,0 +1,8 @@
+Starting project at /Users/mayank/Github/GATE0/app
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Waiting on http://localhost:8082
+Logs for your project will appear below.
+Web ./index.js ▓▓▓▓▓▓▓░░░░░░░░░ 44.1% (1528/2582)
+Web Bundled 4585ms index.js (2978 modules)
+ LOG  [web] Logs will appear in the browser console
