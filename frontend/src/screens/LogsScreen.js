@@ -162,38 +162,35 @@ export default function LogsScreen() {
                 
                 {/* Header */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                    <Text style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>Security Logs</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Pressable 
-                            onPress={exportToCSV}
-                            style={({pressed}) => [
-                                { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: COLORS.accent.primary, marginRight: 12 },
-                                pressed && { opacity: 0.7 }
-                            ]}
-                        >
-                            <Download size={18} color={COLORS.accent.primary} />
-                        </Pressable>
-                        <View style={{ backgroundColor: 'rgba(203,166,247,0.12)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 }}>
-                            <Text style={{ color: COLORS.accent.primary, fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' }}>GUARD</Text>
+                    <View>
+                        <Text style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>LOGS</Text>
+                        <View style={{ backgroundColor: COLORS.status.successBg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 4, alignSelf: 'flex-start' }}>
+                            <Text selectable={true} style={{ color: COLORS.status.success, fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>Security Intel</Text>
                         </View>
                     </View>
+                    <TouchableOpacity 
+                        onPress={exportToCSV}
+                        style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Download size={20} color={COLORS.accent.primary} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Search Bar */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.darker, borderRadius: 12, height: 44, paddingHorizontal: 16, borderWidth: 1, borderColor: COLORS.border.subtle, marginBottom: 16 }}>
-                    <Search size={18} color={COLORS.text.muted} style={{ marginRight: 12 }} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 16, height: 52, paddingHorizontal: 16, marginBottom: 20 }}>
+                    <Search size={20} color={COLORS.text.muted} style={{ marginRight: 12 }} />
                     <TextInput
-                        style={{ flex: 1, fontSize: 15, color: COLORS.text.primary, height: '100%', fontFamily: 'Montserrat' }}
+                        style={{ flex: 1, fontSize: 15, color: COLORS.text.primary, height: '100%', fontWeight: '600' }}
                         placeholderTextColor={COLORS.text.muted}
-                        placeholder="Search logs..."
+                        placeholder="Filter by Name, House, or Service"
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
                 </View>
 
                 {/* Filter Tabs */}
-                <View style={{ marginBottom: 24 }}>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={{ marginBottom: 32 }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingLeft: 4 }}>
                         {FILTERS.map((filter) => {
                             const isActive = activeFilter === filter;
                             return (
@@ -201,22 +198,19 @@ export default function LogsScreen() {
                                     key={filter}
                                     onPress={() => setActiveFilter(filter)}
                                     style={{
-                                        paddingHorizontal: 16,
-                                        paddingVertical: 8,
-                                        borderRadius: 20,
-                                        marginRight: 8,
-                                        backgroundColor: isActive ? COLORS.accent.primary : 'transparent',
-                                        borderWidth: 1,
-                                        borderColor: isActive ? COLORS.accent.primary : COLORS.border.subtle,
+                                        paddingHorizontal: 18,
+                                        paddingVertical: 10,
+                                        borderRadius: 12,
+                                        marginRight: 10,
+                                        backgroundColor: isActive ? COLORS.accent.primary : COLORS.background.surface,
                                     }}
                                 >
                                     <Text style={{ 
-                                        color: isActive ? COLORS.background.darker : COLORS.text.secondary,
-                                        fontSize: 12,
-                                        fontWeight: '700',
-                                        letterSpacing: 1,
-                                        textTransform: 'uppercase',
-                                        fontFamily: 'Montserrat'
+                                        color: isActive ? COLORS.background.primary : COLORS.text.secondary,
+                                        fontSize: 11,
+                                        fontWeight: '800',
+                                        letterSpacing: 1.5,
+                                        textTransform: 'uppercase'
                                     }}>
                                         {filter}
                                     </Text>
@@ -247,45 +241,38 @@ export default function LogsScreen() {
                                 style={({ pressed }) => [
                                     { 
                                         backgroundColor: COLORS.background.card, 
-                                        borderRadius: 16, 
-                                        padding: 16, 
-                                        marginBottom: 12, 
-                                        borderWidth: 1, 
-                                        borderColor: COLORS.border.subtle 
+                                        borderRadius: 24, 
+                                        padding: 20, 
+                                        marginBottom: 16, 
+                                        ...Platform.select({ ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10 }, android: { elevation: 2 } })
                                     },
-                                    pressed && { opacity: 0.8 }
+                                    pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
                                 ]}
                             >
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 12, borderWidth: 1, borderColor: getStatusColor(item) }}>
-                                            <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>{getInitials(item.visitor_name)}</Text>
+                                        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                                            <Text style={{ fontSize: 15, fontWeight: '800', color: COLORS.text.primary }}>{getInitials(item.visitor_name)}</Text>
                                         </View>
                                         <View>
-                                            <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>{item.visitor_name}</Text>
-                                            <Text style={{ fontSize: 12, color: getStatusColor(item), fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 }}>{getLogActionText(item)}</Text>
+                                            <Text style={{ fontSize: 16, fontWeight: '800', color: COLORS.text.primary }}>{item.visitor_name}</Text>
+                                            <Text style={{ fontSize: 11, color: getStatusColor(item), fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 }}>{getLogActionText(item)}</Text>
                                         </View>
                                     </View>
                                     <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.text.primary, fontFamily: 'Courier' }}>{item.time}</Text>
-                                        <Text style={{ fontSize: 11, color: COLORS.text.muted, fontFamily: 'Courier' }}>{item.date}</Text>
+                                        <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.text.primary }}>{item.time}</Text>
+                                        <Text style={{ fontSize: 10, color: COLORS.text.muted, fontWeight: '700' }}>{item.date}</Text>
                                     </View>
                                 </View>
 
-                                <View style={{ height: 1, backgroundColor: COLORS.border.subtle, marginBottom: 12 }} />
-
-                                <View style={{ gap: 6 }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Phone size={12} color={COLORS.text.muted} style={{ marginRight: 8 }} />
-                                        <Text style={{ fontSize: 13, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>{item.visitor_mobile}</Text>
+                                <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+                                        <User size={12} color={COLORS.text.muted} style={{ marginRight: 6 }} />
+                                        <Text style={{ fontSize: 12, color: COLORS.text.secondary, fontWeight: '600' }}>Auth: {item.resident_name || 'Resident'}</Text>
                                     </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <User size={12} color={COLORS.text.muted} style={{ marginRight: 8 }} />
-                                        <Text style={{ fontSize: 13, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>Auth: {item.resident_name || 'Resident'}</Text>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <MapPin size={12} color={COLORS.text.muted} style={{ marginRight: 8 }} />
-                                        <Text style={{ fontSize: 13, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>{item.house_number}, {item.society_name}</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+                                        <MapPin size={12} color={COLORS.text.muted} style={{ marginRight: 6 }} />
+                                        <Text style={{ fontSize: 12, color: COLORS.text.secondary, fontWeight: '600' }}>{item.house_number}</Text>
                                     </View>
                                 </View>
                             </Pressable>
@@ -309,41 +296,44 @@ export default function LogsScreen() {
             >
                 {selectedLog && (
                     <View style={{ padding: 24, flex: 1 }}>
-                        <Text style={{ fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24, fontFamily: 'Montserrat' }}>Log Details</Text>
+                        <View style={{ width: 48, height: 6, backgroundColor: COLORS.border.subtle, borderRadius: 3, alignSelf: 'center', marginBottom: 28 }} />
                         
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
-                            <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16, borderWidth: 1, borderColor: COLORS.accent.primary }}>
-                                <Text style={{ fontSize: 20, fontWeight: '700', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>{getInitials(selectedLog.visitor_name)}</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24 }}>Event Intelligence</Text>
+                        
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 32 }}>
+                            <View style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                                <Text style={{ fontSize: 24, fontWeight: '800', color: COLORS.text.primary }}>{getInitials(selectedLog.visitor_name)}</Text>
                             </View>
                             <View>
-                                <Text style={{ fontSize: 22, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>{selectedLog.visitor_name}</Text>
-                                <Text style={{ fontSize: 15, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>{selectedLog.service_name || 'Visitor'}</Text>
+                                <Text style={{ fontSize: 24, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -0.5 }}>{selectedLog.visitor_name}</Text>
+                                <View style={{ backgroundColor: COLORS.background.surface, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginTop: 4, alignSelf: 'flex-start' }}>
+                                    <Text style={{ fontSize: 13, color: COLORS.text.secondary, fontWeight: '700' }}>{selectedLog.service_name || 'General Visitor'}</Text>
+                                </View>
                             </View>
                         </View>
 
-                        <View style={{ backgroundColor: COLORS.background.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: COLORS.border.subtle }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                                <Phone size={16} color={COLORS.text.muted} style={{ marginRight: 12 }} />
-                                <Text style={{ fontSize: 15, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>{selectedLog.visitor_mobile || 'N/A'}</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                                <User size={16} color={COLORS.text.muted} style={{ marginRight: 12 }} />
-                                <Text style={{ fontSize: 15, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>Auth: {selectedLog.resident_name || 'N/A'}</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                                <MapPin size={16} color={COLORS.text.muted} style={{ marginRight: 12 }} />
-                                <Text style={{ fontSize: 15, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>{selectedLog.house_number}, {selectedLog.society_name}</Text>
-                            </View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Clock size={16} color={COLORS.text.muted} style={{ marginRight: 12 }} />
-                                <Text style={{ fontSize: 15, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>Time: {selectedLog.time}</Text>
-                            </View>
+                        <View style={{ backgroundColor: COLORS.background.surface, borderRadius: 24, padding: 20 }}>
+                            <LogDetailItem icon={<Phone size={18} color={COLORS.accent.primary} />} label="Mobile" value={selectedLog.visitor_mobile || 'N/A'} />
+                            <LogDetailItem icon={<User size={18} color={COLORS.accent.primary} />} label="Auth By" value={selectedLog.resident_name || 'N/A'} />
+                            <LogDetailItem icon={<MapPin size={18} color={COLORS.accent.secondary} />} label="Destination" value={`${selectedLog.house_number}, ${selectedLog.society_name}`} />
+                            <LogDetailItem icon={<Clock size={18} color={COLORS.accent.secondary} />} label="Timestamp" value={`${selectedLog.date} @ ${selectedLog.time}`} isLast />
                         </View>
-
                     </View>
                 )}
             </BottomSheet>
 
         </SafeAreaView>
+    );
+}
+
+function LogDetailItem({ icon, label, value, isLast = false }) {
+    return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: isLast ? 0 : 20 }}>
+            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.background.primary, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>{icon}</View>
+            <View>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>{label}</Text>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text.primary }}>{value}</Text>
+            </View>
+        </View>
     );
 }

@@ -17,11 +17,11 @@ function StatCard({ label, count, color, isActive, onPress }) {
     const scale = useSharedValue(1);
 
     const handlePressIn = () => {
-        scale.value = withSpring(0.96, { stiffness: 300, damping: 15 });
+        scale.value = withSpring(0.98, { stiffness: 400, damping: 20 });
     };
 
     const handlePressOut = () => {
-        scale.value = withSpring(1, { stiffness: 300, damping: 15 });
+        scale.value = withSpring(1, { stiffness: 400, damping: 20 });
     };
 
     const animatedStyle = useAnimatedStyle(() => ({
@@ -35,21 +35,22 @@ function StatCard({ label, count, color, isActive, onPress }) {
             onPressOut={handlePressOut}
             style={[
                 {
-                    width: 110,
-                    backgroundColor: COLORS.background.card,
-                    borderWidth: 1,
-                    borderColor: isActive ? color : COLORS.border.subtle,
-                    borderBottomWidth: 1,
-                    borderBottomColor: isActive ? color : `${color}4D`, // 30% opacity
-                    borderRadius: 14,
-                    padding: 14,
+                    width: 120,
+                    backgroundColor: isActive ? color : COLORS.background.card,
+                    borderRadius: 24,
+                    padding: 16,
                     marginRight: 12,
+                    ...Platform.select({
+                        ios: { shadowColor: color, shadowOffset: { width: 0, height: 12 }, shadowOpacity: isActive ? 0.4 : 0.1, shadowRadius: isActive ? 24 : 32 },
+                        android: { elevation: 2 },
+                        web: { boxShadow: isActive ? `0 12px 24px ${color}40` : '0 8px 32px rgba(0,0,0,0.4)', userSelect: 'text' }
+                    })
                 },
                 animatedStyle
             ]}
         >
-            <Text style={{ fontSize: 28, fontWeight: '800', fontFamily: 'Montserrat', color, marginBottom: 4 }}>{count}</Text>
-            <Text style={{ fontSize: 13, textTransform: 'uppercase', color: COLORS.text.muted, fontFamily: 'Montserrat', letterSpacing: 2 }}>{label}</Text>
+            <Text selectable={true} style={{ fontSize: 32, fontWeight: '800', color: isActive ? COLORS.background.card : color, marginBottom: 4, letterSpacing: -1 }}>{count}</Text>
+            <Text selectable={true} style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', color: isActive ? COLORS.background.card : COLORS.text.muted, letterSpacing: 1 }}>{label}</Text>
         </AnimatedPressable>
     );
 }
@@ -140,18 +141,20 @@ export default function ResidentDashboard({ navigation }) {
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background.primary }} edges={['top']}>
             
             {/* Header Bar */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24, ...Platform.select({ web: { userSelect: 'text' } }) }}>
                 <View>
-                    <Text style={{ fontSize: 22, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>GATE0</Text>
-                    <Text style={{ fontSize: 13, color: COLORS.text.muted, marginTop: 2, fontFamily: 'Montserrat' }}>{user ? `${user.house_number}` : 'House'}</Text>
+                    <Text selectable={true} style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>GATE<Text selectable={true} style={{ color: COLORS.accent.primary }}>0</Text></Text>
+                    <Text selectable={true} style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2 }}>
+                        {user ? `${user.house_number}` : 'AUTH SECURE'}
+                    </Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <TouchableOpacity onPress={handleBellPress} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                        <Bell size={24} color={COLORS.text.primary} />
+                    <TouchableOpacity onPress={handleBellPress} style={{ width: 48, height: 48, backgroundColor: COLORS.background.surface, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                        <Bell size={22} color={COLORS.text.primary} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.accent.primaryDeep, alignItems: 'center', justifyContent: 'center' }}>
-                            <Text style={{ color: COLORS.text.primary, fontSize: 15, fontWeight: '700', fontFamily: 'Montserrat' }}>{getInitials(user?.name)}</Text>
+                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.accent.tertiary, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text selectable={true} style={{ color: COLORS.text.primary, fontSize: 16, fontWeight: '700' }}>{getInitials(user?.name)}</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -167,18 +170,23 @@ export default function ResidentDashboard({ navigation }) {
             </View>
 
             {/* Section Row */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 16 }}>
-                <Text style={{ fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, fontFamily: 'Montserrat' }}>
-                    {filterPeriod === 'All' ? 'All Passes' : `${filterPeriod} Passes`}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 20 }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 2.5, color: COLORS.text.muted }}>
+                    {filterPeriod === 'All' ? 'Intelligence Feed' : `${filterPeriod} Stream`}
                 </Text>
-                <NeonButton title="+ New Pass" height={32} width={100} outlineColor={COLORS.accent.primary} onPress={() => navigation.navigate('CreatePass')} textStyle={{ fontSize: 12 }} />
+                <TouchableOpacity 
+                    onPress={() => navigation.navigate('CreatePass')}
+                    style={{ backgroundColor: COLORS.background.surface, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
+                >
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.accent.primary }}>+ REQUEST ACCESS</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Pass List */}
             {sorted.length === 0 ? (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40 }}>
-                    <Text style={{ fontSize: 17, fontWeight: '600', color: COLORS.text.primary, fontFamily: 'Montserrat', marginBottom: 8 }}>No Passes Found</Text>
-                    <Text style={{ fontSize: 15, color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>Try changing your filter or create a new pass.</Text>
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40, paddingHorizontal: 40 }}>
+                    <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, textAlign: 'center' }}>System Standby</Text>
+                    <Text style={{ fontSize: 15, color: COLORS.text.secondary, textAlign: 'center', lineHeight: 22 }}>No active security logs found for this sector. Request a new pass to begin monitoring.</Text>
                 </View>
             ) : (
                 <FlatList
@@ -196,7 +204,7 @@ export default function ResidentDashboard({ navigation }) {
             {/* Floating Action Button */}
             <RNAnimated.View style={{
                 position: 'absolute',
-                bottom: Platform.OS === 'ios' ? 40 : 24,
+                bottom: 40,
                 right: 24,
                 transform: [{ scale: fabScale }]
             }}>
@@ -204,19 +212,19 @@ export default function ResidentDashboard({ navigation }) {
                     onPressIn={handleFabPressIn}
                     onPress={() => setTimeout(() => navigation.navigate('CreatePass'), 150)}
                     style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 28,
-                        backgroundColor: COLORS.accent.primaryDeep,
+                        width: 64,
+                        height: 64,
+                        borderRadius: 32,
+                        backgroundColor: COLORS.accent.primary,
                         alignItems: 'center',
                         justifyContent: 'center',
                         ...Platform.select({
-                            web: { boxShadow: `0 0 20px rgba(136,57,239,0.5)` },
-                            default: { elevation: 8, shadowColor: COLORS.accent.primaryDeep, shadowOpacity: 0.5, shadowRadius: 10, shadowOffset: { width: 0, height: 0 } },
+                            ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 16 },
+                            android: { elevation: 8 },
                         })
                     }}
                 >
-                    <Plus size={24} color={COLORS.text.primary} />
+                    <Plus size={32} color={COLORS.background.primary} />
                 </Pressable>
             </RNAnimated.View>
 

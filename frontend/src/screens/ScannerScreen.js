@@ -155,9 +155,10 @@ export default function ScannerScreen({ navigation }) {
                         {/* Top Floating Bar */}
                         <SafeAreaView edges={['top']} style={styles.topBarContainer}>
                             <View style={styles.topBar}>
-                                <Text style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat', flex: 1 }}>GATE0</Text>
-                                <Text style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 2.5, color: COLORS.text.muted, fontFamily: 'Montserrat', flex: 1, textAlign: 'center' }}>Scanner</Text>
-                                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }} />
+                                <Text style={{ fontSize: 34, fontWeight: '800', color: '#ffffff', letterSpacing: -1.5 }}>GATE0</Text>
+                                <View style={{ backgroundColor: COLORS.accent.primaryGlow, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
+                                    <Text selectable={true} style={{ fontSize: 10, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 2 }}>Scanner</Text>
+                                </View>
                             </View>
                         </SafeAreaView>
 
@@ -176,8 +177,8 @@ export default function ScannerScreen({ navigation }) {
                             </View>
 
                             <View style={{ alignItems: 'center', marginTop: 40 }}>
-                                <Text style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.primary, fontFamily: 'Montserrat', marginBottom: 8 }}>Scan GATE0 Pass</Text>
-                                <Text style={{ fontSize: 12, color: COLORS.text.muted, fontFamily: 'Montserrat' }}>Point camera at the QR code on the pass</Text>
+                                <Text style={{ fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2.5, color: '#ffffff', marginBottom: 8 }}>Polar Intelligence Scan</Text>
+                                <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center', paddingHorizontal: 40 }}>Align the security token within the kinetic field for verification.</Text>
                             </View>
                         </View>
 
@@ -186,29 +187,30 @@ export default function ScannerScreen({ navigation }) {
                             <View style={styles.bottomBar}>
                                 <TouchableOpacity 
                                     onPress={() => setTorch(!torch)}
-                                    style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: torch ? COLORS.accent.primaryDeep : COLORS.background.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: torch ? COLORS.accent.primary : COLORS.border.subtle, flex: 1, maxWidth: 44 }}
+                                    style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: torch ? COLORS.accent.primary : 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' }}
                                 >
-                                    <Zap size={20} color={torch ? COLORS.text.primary : COLORS.text.muted} />
+                                    <Zap size={24} color={torch ? '#ffffff' : 'rgba(255,255,255,0.6)'} />
                                 </TouchableOpacity>
                                 
-                                <View style={{ flex: 2, alignItems: 'center' }}>
+                                <View style={{ flex: 1, alignItems: 'center' }}>
                                     <View style={{ 
-                                        backgroundColor: scanned ? '#0a2030' : COLORS.border.subtle, 
-                                        paddingHorizontal: 16, 
-                                        paddingVertical: 6, 
-                                        borderRadius: 20,
-                                        borderWidth: 1,
-                                        borderColor: scanned ? COLORS.accent.secondary : 'transparent'
+                                        backgroundColor: scanned ? COLORS.accent.primary : 'rgba(255,255,255,0.1)', 
+                                        paddingHorizontal: 20, 
+                                        paddingVertical: 10, 
+                                        borderRadius: 24,
                                     }}>
-                                        <Text style={{ color: scanned ? COLORS.accent.secondary : COLORS.text.muted, fontSize: 10, fontWeight: '800', letterSpacing: 1.5, fontFamily: 'Montserrat' }}>
-                                            ● {scanned ? 'SCANNING' : 'READY'}
+                                        <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '800', letterSpacing: 2 }}>
+                                            {scanned ? 'VERIFYING...' : 'READY'}
                                         </Text>
                                     </View>
                                 </View>
 
-                                <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                                    <NeonButton title="Enter Code" onPress={() => bottomSheetRef.current?.expand()} width={90} height={36} textStyle={{ fontSize: 11 }} />
-                                </View>
+                                <TouchableOpacity 
+                                    onPress={() => bottomSheetRef.current?.expand()}
+                                    style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    <Keyboard size={24} color="rgba(255,255,255,0.6)" />
+                                </TouchableOpacity>
                             </View>
                         </SafeAreaView>
 
@@ -253,7 +255,7 @@ const styles = StyleSheet.create({
     camera: { flex: 1 },
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.72)',
+        backgroundColor: 'rgba(4, 4, 10, 0.75)',
     },
     topBarContainer: {
         position: 'absolute',
@@ -266,15 +268,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        backgroundColor: Platform.OS === 'web' ? 'rgba(13,13,20,0.88)' : COLORS.background.primary,
-        borderBottomWidth: 1,
-        borderBottomColor: COLORS.border.subtle,
-        ...Platform.select({
-            web: { backdropFilter: 'blur(20px)' },
-            default: { opacity: 0.95 }
-        })
+        paddingHorizontal: 24,
+        paddingVertical: 20,
     },
     bottomBarContainer: {
         position: 'absolute',
@@ -287,31 +282,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        paddingBottom: Platform.OS === 'ios' ? 0 : 16,
-        backgroundColor: Platform.OS === 'web' ? 'rgba(13,13,20,0.88)' : COLORS.background.primary,
-        borderTopWidth: 1,
-        borderTopColor: COLORS.border.subtle,
-        ...Platform.select({
-            web: { backdropFilter: 'blur(20px)' },
-            default: { opacity: 0.95 }
-        })
+        paddingHorizontal: 24,
+        paddingVertical: 32,
     },
     scanFrame: { width: 260, height: 260, backgroundColor: 'transparent', position: 'relative' },
     corner: { 
         position: 'absolute', 
-        width: 32, 
-        height: 32, 
+        width: 48, 
+        height: 48, 
         borderColor: COLORS.accent.primary, 
-        borderWidth: 0,
-        ...Platform.select({
-            web: { boxShadow: `0 0 10px rgba(203,166,247,0.7)` },
-            default: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.7, shadowRadius: 10, elevation: 5 }
-        })
     },
-    topLeft: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 12 },
-    topRight: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 12 },
-    bottomLeft: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 12 },
-    bottomRight: { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 12 },
+    topLeft: { top: 0, left: 0, borderTopWidth: 4, borderLeftWidth: 4, borderTopLeftRadius: 24 },
+    topRight: { top: 0, right: 0, borderTopWidth: 4, borderRightWidth: 4, borderTopRightRadius: 24 },
+    bottomLeft: { bottom: 0, left: 0, borderBottomWidth: 4, borderLeftWidth: 4, borderBottomLeftRadius: 24 },
+    bottomRight: { bottom: 0, right: 0, borderBottomWidth: 4, borderRightWidth: 4, borderBottomRightRadius: 24 },
 });

@@ -53,74 +53,74 @@ export default function ProfileScreen({ navigation }) {
             <View style={{ flex: 1, padding: 24 }}>
                 
                 {/* Header */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 48 }}>
-                    <TouchableOpacity 
-                        onPress={() => navigation.goBack()}
-                        style={{ width: 44, height: 44, backgroundColor: COLORS.background.card, borderRadius: 22, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: COLORS.border.subtle, marginRight: 16 }}
-                    >
-                        <ArrowLeft size={24} color={COLORS.accent.primary} />
-                    </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
                     <View>
-                        <Text style={{ fontSize: 32, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>Profile Portal</Text>
-                        <Text style={{ fontSize: 13, color: COLORS.text.muted, fontFamily: 'Montserrat', marginTop: 4 }}>GateZero Security Network</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 12 }}>
+                                <ArrowLeft color={COLORS.text.primary} size={28} />
+                            </TouchableOpacity>
+                            <Text style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>PROFILE</Text>
+                        </View>
+                        <View style={{ backgroundColor: COLORS.status.successBg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 4, alignSelf: 'flex-start' }}>
+                            <Text style={{ color: COLORS.status.success, fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>Authorized Entity</Text>
+                        </View>
                     </View>
                 </View>
 
                 {/* Main Profile Card */}
                 <View style={{ 
-                    backgroundColor: COLORS.background.card, 
-                    borderRadius: 24, 
+                    backgroundColor: COLORS.background.surface, 
+                    borderRadius: 32, 
                     padding: 32, 
                     alignItems: 'center', 
-                    borderWidth: 1, 
-                    borderColor: COLORS.border.subtle,
                     width: '100%',
+                    marginBottom: 32,
                     ...Platform.select({
-                        web: { boxShadow: `0 8px 32px rgba(0,0,0,0.4)` },
-                        default: { elevation: 4 }
+                        ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.1, shadowRadius: 24 },
+                        android: { elevation: 2 },
+                        web: { boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }
                     })
                 }}>
                     <View style={{ 
-                        width: 100, height: 100, borderRadius: 50, 
-                        backgroundColor: COLORS.background.surface, 
+                        width: 128, height: 128, borderRadius: 64, 
+                        backgroundColor: COLORS.background.primary, 
                         alignItems: 'center', justifyContent: 'center', 
-                        marginBottom: 20,
-                        borderWidth: 2,
-                        borderColor: ROLE_COLORS[user.role] || COLORS.accent.primary,
-                        ...Platform.select({
-                            web: { boxShadow: `0 0 20px ${ROLE_COLORS[user.role]}40` },
-                            default: {}
-                        })
+                        marginBottom: 24,
                     }}>
-                        <Text style={{ fontSize: 36, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>
+                        <Text style={{ fontSize: 44, fontWeight: '800', color: COLORS.text.primary }}>
                             {getInitials(user.name)}
                         </Text>
                     </View>
-
-                    <Text style={{ fontSize: 24, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat', marginBottom: 8 }}>
+ 
+                    <Text style={{ fontSize: 28, fontWeight: '800', color: COLORS.text.primary, marginBottom: 8, letterSpacing: -0.5 }}>
                         {user.name}
                     </Text>
-
+ 
                     <View style={{ 
-                        backgroundColor: `${ROLE_COLORS[user.role]}15`, 
+                        backgroundColor: COLORS.background.primary, 
                         paddingHorizontal: 16, 
                         paddingVertical: 6, 
                         borderRadius: 20,
+                        marginBottom: 24,
                         borderWidth: 1,
-                        borderColor: `${ROLE_COLORS[user.role]}40`,
-                        marginBottom: 16
+                        borderColor: user.role === 'guard' ? COLORS.status.success : COLORS.accent.primary
                     }}>
-                        <Text style={{ color: ROLE_COLORS[user.role], fontSize: 12, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>
+                        <Text style={{ color: user.role === 'guard' ? COLORS.status.success : COLORS.accent.primary, fontSize: 11, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>
                             {user.role}
                         </Text>
                     </View>
-
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ fontSize: 13, color: COLORS.text.muted, fontFamily: 'Montserrat', letterSpacing: 1 }}>CONNECTED AS </Text>
-                        <Text style={{ fontSize: 15, color: COLORS.text.secondary, fontFamily: 'Courier', fontWeight: '700' }}>
+ 
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}>
+                        <Text style={{ fontSize: 11, color: COLORS.text.muted, fontWeight: '800', letterSpacing: 1 }}>CONNECTED </Text>
+                        <Text style={{ fontSize: 13, color: COLORS.text.primary, fontWeight: '800' }}>
                             {user.mobile}
                         </Text>
                     </View>
+                </View>
+
+                <View style={{ gap: 12 }}>
+                    <ProfileMenuItem icon={<RefreshCcw size={20} color={COLORS.accent.primary} />} label="Update Credentials" />
+                    <ProfileMenuItem icon={<HelpCircle size={20} color={COLORS.accent.primary} />} label="Security Support" />
                 </View>
 
                 <View style={{ flex: 1 }} />
@@ -134,18 +134,39 @@ export default function ProfileScreen({ navigation }) {
                         alignItems: 'center', 
                         justifyContent: 'center', 
                         height: 64, 
-                        backgroundColor: 'rgba(243,139,168,0.1)', 
-                        borderRadius: 18, 
-                        borderWidth: 1, 
-                        borderColor: 'rgba(243,139,168,0.3)',
-                        marginBottom: 24
+                        backgroundColor: COLORS.status.errorBg, 
+                        borderRadius: 20, 
+                        marginBottom: 32
                     }}
                 >
                     <LogOut size={22} color={COLORS.status.error} style={{ marginRight: 12 }} />
-                    <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.status.error, fontFamily: 'Montserrat', letterSpacing: 1, textTransform: 'uppercase' }}>Terminate Session</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: COLORS.status.error, letterSpacing: 1, textTransform: 'uppercase' }}>Terminate Session</Text>
                 </TouchableOpacity>
 
             </View>
         </SafeAreaView>
+    );
+}
+
+function ProfileMenuItem({ icon, label }) {
+    return (
+        <TouchableOpacity 
+            style={{ 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                padding: 20, 
+                backgroundColor: COLORS.background.surface, 
+                borderRadius: 20 
+            }}
+        >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.background.primary, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                    {icon}
+                </View>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text.primary }}>{label}</Text>
+            </View>
+            <ChevronRight size={20} color={COLORS.text.muted} />
+        </TouchableOpacity>
     );
 }

@@ -107,9 +107,9 @@ export default function ScanResultScreen({ navigation, route }) {
     };
 
     const getStatusConfig = () => {
-        if (status === 'approved') return { label: 'ENTRY APPROVED', color: COLORS.status.success, bg: COLORS.status.successBg };
-        if (status === 'denied' || status === 'invalid' || error) return { label: error ? 'INVALID PASS' : 'DENIED', color: COLORS.status.error, bg: '#3a1520' };
-        return { label: 'PENDING VERIFICATION', color: COLORS.status.warning, bg: COLORS.status.warningBg };
+        if (status === 'approved') return { label: 'ENTRY AUTHORIZED', color: COLORS.status.success, bg: COLORS.status.successBg };
+        if (status === 'denied' || status === 'invalid' || error) return { label: error ? 'INVALID TOKEN' : 'ACCESS DENIED', color: COLORS.status.error, bg: COLORS.status.errorBg };
+        return { label: 'WAITING FOR DATA...', color: COLORS.accent.tertiary, bg: COLORS.status.warningBg };
     };
 
     const statusConfig = getStatusConfig();
@@ -117,42 +117,39 @@ export default function ScanResultScreen({ navigation, route }) {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background.primary }}>
             
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', padding: 24 }}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: COLORS.border.subtle }}>
-                    <X size={24} color={COLORS.text.muted} />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 24, paddingTop: 20 }}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center' }}>
+                    <X size={22} color={COLORS.text.primary} />
                 </TouchableOpacity>
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
                 
-                <View style={{ backgroundColor: COLORS.background.card, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: COLORS.border.subtle, marginBottom: 32 }}>
+                <View style={{ backgroundColor: COLORS.background.surface, borderRadius: 32, padding: 24, marginBottom: 32, ...Platform.select({ ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.1, shadowRadius: 24 }, android: { elevation: 2 } }) }}>
                     
                     {/* Status Badge */}
-                    <View style={{ backgroundColor: statusConfig.bg, alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginBottom: 32 }}>
-                        <Text style={{ color: statusConfig.color, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, fontFamily: 'Montserrat' }}>
-                            {loading ? 'FETCHING DETAILS...' : statusConfig.label}
+                    <View style={{ backgroundColor: statusConfig.bg, alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, marginBottom: 32 }}>
+                        <Text style={{ color: statusConfig.color, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2 }}>
+                            {loading ? 'CALIBRATING...' : statusConfig.label}
                         </Text>
                     </View>
 
-                    <Text style={{ fontSize: 13, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontFamily: 'Montserrat', fontWeight: '700' }}>Pass Identity</Text>
-                    <View style={{ marginBottom: 24 }}>
-                        <Text style={{ fontSize: 18, color: COLORS.text.primary, fontFamily: 'Courier', fontWeight: '800' }}>{passData.id}</Text>
+                    <Text style={{ fontSize: 11, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontWeight: '800' }}>SECURITY TOKEN</Text>
+                    <View style={{ marginBottom: 32, backgroundColor: COLORS.background.primary, padding: 16, borderRadius: 12 }}>
+                        <Text style={{ fontSize: 18, color: COLORS.text.primary, fontWeight: '800', letterSpacing: 1 }}>{passData.id}</Text>
                     </View>
 
-                    <Text style={{ fontSize: 13, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontFamily: 'Montserrat', fontWeight: '700' }}>Visitor Details</Text>
-                    <View style={{ gap: 16, marginBottom: 32 }}>
-                        <DetailRow icon={<User size={18} color={COLORS.text.muted} />} label="Name" value={loading ? 'Loading...' : result.visitor_name || 'Unknown'} />
-                        <View style={{ height: 1, backgroundColor: COLORS.border.subtle }} />
-                        <DetailRow icon={<Phone size={18} color={COLORS.text.muted} />} label="Mobile" value={loading ? 'Loading...' : result.visitor_mobile || 'Unknown'} />
-                        <View style={{ height: 1, backgroundColor: COLORS.border.subtle }} />
-                        <DetailRow icon={<Briefcase size={18} color={COLORS.text.muted} />} label="Service" value={loading ? 'Loading...' : result.service_name || 'Unknown'} />
+                    <Text style={{ fontSize: 11, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontWeight: '800' }}>VISITOR INTEL</Text>
+                    <View style={{ gap: 20, marginBottom: 40 }}>
+                        <DetailRow icon={<User size={18} color={COLORS.accent.primary} />} label="Name" value={loading ? '...' : result.visitor_name || 'N/A'} />
+                        <DetailRow icon={<Phone size={18} color={COLORS.accent.primary} />} label="Mobile" value={loading ? '...' : result.visitor_mobile || 'N/A'} />
+                        <DetailRow icon={<Briefcase size={18} color={COLORS.accent.primary} />} label="Service" value={loading ? '...' : result.service_name || 'N/A'} />
                     </View>
 
-                    <Text style={{ fontSize: 13, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontFamily: 'Montserrat', fontWeight: '700' }}>Destination</Text>
-                    <View style={{ gap: 16 }}>
-                        <DetailRow icon={<Building2 size={18} color={COLORS.text.muted} />} label="Resident" value={loading ? 'Loading...' : result.resident_name || 'Unknown'} />
-                        <View style={{ height: 1, backgroundColor: COLORS.border.subtle }} />
-                        <DetailRow icon={<MapPin size={18} color={COLORS.text.muted} />} label="Unit" value={loading ? 'Loading...' : `${result.house_number || '?'}, ${result.society_name || '?'}`} highlight />
+                    <Text style={{ fontSize: 11, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontWeight: '800' }}>DESTINATION</Text>
+                    <View style={{ gap: 20 }}>
+                        <DetailRow icon={<Building2 size={18} color={COLORS.accent.secondary} />} label="Resident" value={loading ? '...' : result.resident_name || 'N/A'} />
+                        <DetailRow icon={<MapPin size={18} color={COLORS.accent.secondary} />} label="Unit" value={loading ? '...' : `${result.house_number || '?'}, ${result.society_name || '?'}`} highlight />
                     </View>
 
                 </View>
@@ -160,23 +157,28 @@ export default function ScanResultScreen({ navigation, route }) {
                 {status === 'pending' && !error && !loading ? (
                     <View style={{ gap: 16 }}>
                         <ButtonColorful 
-                            title="Allow Entry" 
+                            title="GRANT ACCESS" 
                             onPress={approvePass} 
                             loading={actionState === 'approving'} 
                             disabled={actionState !== null}
                             width="100%" 
-                            height={56} 
+                            height={64} 
                         />
                         
-                        <NeonButton 
-                            title="Deny Entry & Flag" 
+                        <TouchableOpacity 
                             onPress={denyPass}
                             disabled={actionState !== null}
-                            width="100%" 
-                            height={56} 
-                            outlineColor={COLORS.status.error}
-                            textStyle={{ color: COLORS.status.error }}
-                        />
+                            style={{ 
+                                width: '100%', 
+                                height: 56, 
+                                borderRadius: 16, 
+                                backgroundColor: COLORS.status.errorBg, 
+                                alignItems: 'center', 
+                                justifyContent: 'center' 
+                            }}
+                        >
+                            <Text selectable={true} style={{ color: COLORS.status.error, fontWeight: '800', fontSize: 14, letterSpacing: 1.5 }}>DENY & FLAG</Text>
+                        </TouchableOpacity>
                     </View>
                 ) : (
                     <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
@@ -194,10 +196,10 @@ export default function ScanResultScreen({ navigation, route }) {
 function DetailRow({ icon, label, value, highlight = false }) {
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ width: 32, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={{ fontSize: 13, color: COLORS.text.muted, marginBottom: 4, fontFamily: 'Montserrat' }}>{label}</Text>
-                <Text style={{ fontSize: 15, color: highlight ? COLORS.text.primary : COLORS.text.secondary, fontWeight: highlight ? '600' : '400', fontFamily: 'Montserrat' }}>
+            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.background.primary, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+            <View style={{ flex: 1, marginLeft: 16 }}>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</Text>
+                <Text style={{ fontSize: 16, color: COLORS.text.primary, fontWeight: '700' }}>
                     {value}
                 </Text>
             </View>

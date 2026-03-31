@@ -16,8 +16,8 @@ function LiveIndicator() {
     useEffect(() => {
         opacity.value = withRepeat(
             withSequence(
-                withTiming(0.3, { duration: 1000 }),
-                withTiming(1, { duration: 1000 })
+                withTiming(0.4, { duration: 1200 }),
+                withTiming(1, { duration: 1200 })
             ),
             -1,
             true
@@ -26,13 +26,13 @@ function LiveIndicator() {
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
-        backgroundColor: COLORS.status.success,
+        backgroundColor: COLORS.accent.primary,
     }));
 
     return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Animated.View style={[{ width: 6, height: 6, borderRadius: 3, marginRight: 6 }, animatedStyle]} />
-            <Text style={{ fontSize: 11, color: COLORS.text.muted, fontFamily: 'Montserrat' }}>Live · refreshes every 5s</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, alignSelf: 'flex-start' }}>
+            <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, marginRight: 8 }, animatedStyle]} />
+            <Text style={{ fontSize: 11, fontWeight: '700', color: COLORS.text.secondary, textTransform: 'uppercase', letterSpacing: 1 }}>Live Sector Stream</Text>
         </View>
     );
 }
@@ -112,16 +112,16 @@ export default function VisitorDashboard({ navigation }) {
             <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }}>
                 
                 {/* Header */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <View>
-                        <Text style={{ fontSize: 24, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>My Passes</Text>
-                        <View style={{ backgroundColor: 'rgba(203,166,247,0.12)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 4, alignSelf: 'flex-start' }}>
-                            <Text style={{ color: COLORS.accent.primary, fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>VISITOR</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                    <View style={{ ...Platform.select({ web: { userSelect: 'text' } }) }}>
+                        <Text selectable={true} style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>GATE<Text selectable={true} style={{ color: COLORS.accent.primary }}>0</Text></Text>
+                        <View style={{ backgroundColor: COLORS.status.successBg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 4, alignSelf: 'flex-start' }}>
+                            <Text selectable={true} style={{ color: COLORS.status.success, fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>VISITOR ACCESS</Text>
                         </View>
                     </View>
                     <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                        <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.background.card, borderWidth: 1, borderColor: COLORS.border.subtle, alignItems: 'center', justifyContent: 'center' }}>
-                            <Text style={{ color: COLORS.text.primary, fontSize: 16, fontWeight: '700', fontFamily: 'Montserrat' }}>{getInitials(user?.name)}</Text>
+                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.background.card, alignItems: 'center', justifyContent: 'center', ...Platform.select({ ios: { shadowColor: '#292e3d', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8 }, android: { elevation: 2 } }) }}>
+                            <Text style={{ color: COLORS.text.primary, fontSize: 16, fontWeight: '700' }}>{getInitials(user?.name)}</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -132,13 +132,13 @@ export default function VisitorDashboard({ navigation }) {
                 </View>
 
                 {passes.length === 0 ? (
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: -40 }}>
-                        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 20, borderWidth: 1, borderColor: COLORS.border.subtle }}>
-                            <Inbox size={48} color={COLORS.border.subtle} />
+                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: -40, paddingHorizontal: 40 }}>
+                        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+                            <Inbox size={40} color={COLORS.text.muted} />
                         </View>
-                        <Text style={{ fontSize: 16, fontWeight: '600', color: COLORS.text.secondary, marginBottom: 8, fontFamily: 'Montserrat' }}>No Active Passes</Text>
-                        <Text style={{ fontSize: 13, color: COLORS.text.muted, textAlign: 'center', paddingHorizontal: 32, fontFamily: 'Montserrat' }}>
-                            Passes assigned to your mobile appear here
+                        <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, textAlign: 'center' }}>Stream Offline</Text>
+                        <Text style={{ fontSize: 15, color: COLORS.text.secondary, textAlign: 'center', lineHeight: 22 }}>
+                            No security tokens have been assigned to your sector. New passes will appear here in real-time.
                         </Text>
                     </View>
                 ) : (
@@ -155,7 +155,7 @@ export default function VisitorDashboard({ navigation }) {
                             />
                         )}
                         renderSectionHeader={({ section: { title } }) => (
-                            <Text style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1.5, color: COLORS.text.muted, marginBottom: 12, marginTop: 16, marginLeft: 8, fontFamily: 'Montserrat' }}>
+                            <Text style={{ fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 16, marginTop: 24, marginLeft: 4 }}>
                                 {title}
                             </Text>
                         )}
@@ -184,28 +184,25 @@ export default function VisitorDashboard({ navigation }) {
                         
                         <View style={{ 
                             backgroundColor: COLORS.background.primary, 
-                            borderTopLeftRadius: 32, 
-                            borderTopRightRadius: 32, 
+                            borderTopLeftRadius: 36, 
+                            borderTopRightRadius: 36, 
                             padding: 24, 
                             paddingBottom: Platform.OS === 'ios' ? 48 : 32,
-                            minHeight: '75%',
-                            borderWidth: 1,
-                            borderColor: COLORS.border.subtle,
-                            borderBottomWidth: 0
+                            minHeight: '80%',
                         }}>
                             {/* Drag Indicator */}
-                            <View style={{ width: 40, height: 4, backgroundColor: COLORS.border.subtle, borderRadius: 2, alignSelf: 'center', marginBottom: 24 }} />
+                            <View style={{ width: 48, height: 6, backgroundColor: COLORS.border.subtle, borderRadius: 3, alignSelf: 'center', marginBottom: 28 }} />
 
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-                                <View>
-                                    <Text style={{ fontSize: 24, fontWeight: '800', color: COLORS.text.primary, fontFamily: 'Montserrat' }}>Digital Pass</Text>
-                                    <Text style={{ fontSize: 13, color: COLORS.text.muted, fontFamily: 'Courier', marginTop: 4, letterSpacing: 2 }}>{selectedPass?.pass_code}</Text>
+                                <View style={{ ...Platform.select({ web: { userSelect: 'text' } }) }}>
+                                    <Text selectable={true} style={{ fontSize: 32, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1 }}>Digital Pass</Text>
+                                    <Text selectable={true} style={{ fontSize: 12, color: COLORS.text.muted, fontWeight: '700', marginTop: 4, letterSpacing: 3 }}>{selectedPass?.pass_code}</Text>
                                 </View>
                                 <TouchableOpacity 
                                     onPress={() => setSelectedPass(null)}
-                                    style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.background.card, alignItems: 'center', justifyContent: 'center' }}
+                                    style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center' }}
                                 >
-                                    <X size={24} color={COLORS.text.muted} />
+                                    <X size={22} color={COLORS.text.primary} />
                                 </TouchableOpacity>
                             </View>
 
@@ -213,14 +210,15 @@ export default function VisitorDashboard({ navigation }) {
                                 <View style={{ 
                                     backgroundColor: COLORS.background.card, 
                                     padding: 24, 
-                                    borderRadius: 24, 
-                                    borderWidth: 1, 
-                                    borderColor: COLORS.border.subtle,
-                                    shadowColor: COLORS.accent.primary,
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 20
+                                    borderRadius: 32, 
+                                    // Ambient Action Glow
+                                    ...Platform.select({
+                                        ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 20 }, shadowOpacity: 0.15, shadowRadius: 40 },
+                                        android: { elevation: 8 },
+                                        web: { boxShadow: `0 20px 40px ${COLORS.accent.primary}25` }
+                                    })
                                 }}>
-                                    <View style={{ backgroundColor: '#fff', padding: 12, borderRadius: 16 }}>
+                                    <View style={{ backgroundColor: '#fff', padding: 12, borderRadius: 20 }}>
                                         <QRCode 
                                             value={getQRContent(selectedPass) || "INVALID"} 
                                             size={200} 
