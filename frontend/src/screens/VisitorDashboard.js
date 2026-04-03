@@ -121,8 +121,22 @@ export default function VisitorDashboard({ navigation }) {
                         </View>
                     </View>
                     <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.background.card, alignItems: 'center', justifyContent: 'center', ...Platform.select({ ios: { shadowColor: '#292e3d', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8 }, android: { elevation: 2 } }) }}>
-                            <Text style={{ color: COLORS.text.primary, fontSize: 16, fontWeight: '700' }}>{getInitials(user?.name)}</Text>
+                        <View style={{ 
+                            width: 48, 
+                            height: 48, 
+                            borderRadius: 24, 
+                            backgroundColor: 'rgba(200, 150, 60, 0.1)', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            borderWidth: 1.5,
+                            borderColor: 'rgba(200, 150, 60, 0.4)',
+                            ...Platform.select({
+                                web: { boxShadow: '0 0 15px rgba(200, 150, 60, 0.25)' },
+                                ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 8 },
+                                android: { elevation: 2 }
+                            })
+                        }}>
+                            <Text style={{ color: COLORS.accent.primary, fontSize: 14, fontWeight: '800' }}>{getInitials(user?.name)}</Text>
                         </View>
                     </TouchableOpacity>
                 </View>

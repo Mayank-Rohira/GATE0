@@ -64,8 +64,9 @@ export default function ResidentDashboard({ navigation }) {
     const [user, setUserData] = useState(null);
     const [notifications, setNotifications] = useState([]);
     const [hasUnread, setHasUnread] = useState(false);
+    const [filterPeriod, setFilterPeriod] = useState('All');
     const notificationsSheetRef = useRef(null);
-    const snapPoints = useMemo(() => ['40%'], []);
+    const snapPoints = useMemo(() => ['50%'], []);
     const prevApprovedCount = useRef(0);
 
     const initUser = async () => {
@@ -153,7 +154,7 @@ export default function ResidentDashboard({ navigation }) {
 
     const handleBellPress = () => {
         setHasUnread(false);
-        notificationsSheetRef.current?.expand();
+        notificationsSheetRef.current?.snapToIndex(0);
     };
 
     const renderBackdrop = useCallback((props) => (
@@ -179,8 +180,21 @@ export default function ResidentDashboard({ navigation }) {
                         )}
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-                        <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.accent.tertiary, alignItems: 'center', justifyContent: 'center' }}>
-                            <Text selectable={true} style={{ color: COLORS.text.primary, fontSize: 16, fontWeight: '700' }}>{getInitials(user?.name)}</Text>
+                        <View style={{ 
+                            width: 48, 
+                            height: 48, 
+                            borderRadius: 24, 
+                            backgroundColor: 'rgba(200, 150, 60, 0.1)', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            borderWidth: 1.5,
+                            borderColor: 'rgba(200, 150, 60, 0.4)',
+                            ...Platform.select({
+                                web: { boxShadow: '0 0 15px rgba(200, 150, 60, 0.25)' },
+                                ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.4, shadowRadius: 8 }
+                            })
+                        }}>
+                            <Text selectable={true} style={{ color: COLORS.accent.primary, fontSize: 14, fontWeight: '800' }}>{getInitials(user?.name)}</Text>
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -264,7 +278,12 @@ export default function ResidentDashboard({ navigation }) {
                 handleIndicatorStyle={{ backgroundColor: COLORS.border.subtle }}
             >
                 <View style={{ padding: 24, flex: 1 }}>
-                    <Text style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 20, textTransform: 'uppercase' }}>Security Notifications</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, letterSpacing: 2, textTransform: 'uppercase' }}>Security Notifications</Text>
+                        <TouchableOpacity onPress={() => notificationsSheetRef.current?.close()}>
+                            <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 1 }}>Dismiss</Text>
+                        </TouchableOpacity>
+                    </View>
                     {notifications.length === 0 ? (
                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: -40 }}>
                             <Bell size={40} color={COLORS.border.subtle} style={{ marginBottom: 16 }} />

@@ -93,8 +93,8 @@ function BackgroundRender({ progress }) {
 // --- Interaction Components ---
 
 function RoleCard({ label, description, icon: Icon, onPress, index, progress }) {
-    // 0.75 - 1.0: Role select appearing (3.75s-5s)
-    const cardStart = 0.75 + (index * 0.05); 
+    // 0.82 - 1.0: Role select appearing
+    const cardStart = 0.82 + (index * 0.04); 
 
     const animatedStyle = useAnimatedStyle(() => {
         const opacity = interpolate(progress.value, [cardStart, cardStart + 0.1], [0, 1], Extrapolation.CLAMP);
@@ -144,9 +144,16 @@ export default function RoleSelectScreen({ navigation }) {
         letterSpacing: interpolate(masterProgress.value, [0.35, 0.6], [10, 18], Extrapolation.CLAMP),
     }));
 
-    const subStyle = useAnimatedStyle(() => {
-        const opacity = interpolate(masterProgress.value, [0.55, 0.7], [0, 1], Extrapolation.CLAMP);
-        const color = interpolateColor(masterProgress.value, [0.55, 0.7], ['rgba(245, 197, 66, 0)', 'rgba(245, 197, 66, 1)']);
+    const subGlowStyle = useAnimatedStyle(() => {
+        // Appears after GATE0 (0.35-0.5)
+        const opacity = interpolate(masterProgress.value, [0.55, 0.65], [0, 1], Extrapolation.CLAMP);
+        return { opacity };
+    });
+
+    const subTextStyle = useAnimatedStyle(() => {
+        // Appears after the Glow (0.55-0.65)
+        const opacity = interpolate(masterProgress.value, [0.65, 0.8], [0, 1], Extrapolation.CLAMP);
+        const color = interpolateColor(masterProgress.value, [0.65, 0.8], ['rgba(245, 197, 66, 0.2)', 'rgba(245, 197, 66, 1)']);
         
         return {
             opacity,
@@ -165,12 +172,12 @@ export default function RoleSelectScreen({ navigation }) {
                             GATE0
                         </Animated.Text>
 
-                        <Animated.View style={[styles.subtitleContainer, { opacity: subStyle.opacity }]}>
-                            <View style={styles.subtitleGlow} />
-                            <Animated.Text style={[styles.subtitle, subStyle]}>
+                        <View style={styles.subtitleContainer}>
+                            <Animated.View style={[styles.subtitleGlow, subGlowStyle]} />
+                            <Animated.Text style={[styles.subtitle, subTextStyle]}>
                                 Intelligent residential access
                             </Animated.Text>
-                        </Animated.View>
+                        </View>
 
                         <View style={styles.rolesGrid}>
                             {ROLE_DATA.map((role, i) => (

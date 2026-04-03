@@ -20,7 +20,7 @@ export default function LogsScreen() {
     const [selectedLog, setSelectedLog] = useState(null);
 
     const bottomSheetRef = useRef(null);
-    const snapPoints = useMemo(() => ['45%'], []);
+    const snapPoints = useMemo(() => ['70%'], []);
 
     const fetchLogs = useCallback(async () => {
         try {
@@ -98,7 +98,7 @@ export default function LogsScreen() {
 
     const handleLogPress = (log) => {
         setSelectedLog(log);
-        bottomSheetRef.current?.expand();
+        bottomSheetRef.current?.snapToIndex(0);
     };
 
     const exportToCSV = async () => {
@@ -300,9 +300,15 @@ export default function LogsScreen() {
             >
                 {selectedLog && (
                     <View style={{ padding: 24, flex: 1 }}>
-                        <View style={{ width: 48, height: 6, backgroundColor: COLORS.border.subtle, borderRadius: 3, alignSelf: 'center', marginBottom: 28 }} />
-                        
-                        <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24 }}>Pass Details</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                            <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted }}>Pass Details</Text>
+                            <TouchableOpacity onPress={() => {
+                                bottomSheetRef.current?.close();
+                                setSelectedLog(null);
+                            }}>
+                                <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 1 }}>Dismiss</Text>
+                            </TouchableOpacity>
+                        </View>
                         
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 32 }}>
                             <View style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
