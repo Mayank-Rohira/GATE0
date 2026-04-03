@@ -152,14 +152,17 @@ export default function ResidentDashboard({ navigation }) {
         ]).start();
     };
 
-    const handleBellPress = () => {
-        setHasUnread(false);
-        notificationsSheetRef.current?.snapToIndex(0);
-    };
-
     const renderBackdrop = useCallback((props) => (
         <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.6} />
     ), []);
+
+    // Explicitly manage the index in state for better reliability
+    const [sheetIndex, setSheetIndex] = useState(-1);
+
+    const handleBellPress = () => {
+        setHasUnread(false);
+        setSheetIndex(0);
+    };
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background.primary }} edges={['top']}>
@@ -270,7 +273,8 @@ export default function ResidentDashboard({ navigation }) {
 
             <BottomSheet
                 ref={notificationsSheetRef}
-                index={-1}
+                index={sheetIndex}
+                onChange={setSheetIndex}
                 snapPoints={snapPoints}
                 enablePanDownToClose
                 backdropComponent={renderBackdrop}
@@ -280,7 +284,7 @@ export default function ResidentDashboard({ navigation }) {
                 <View style={{ padding: 24, flex: 1 }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                         <Text style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, letterSpacing: 2, textTransform: 'uppercase' }}>Security Notifications</Text>
-                        <TouchableOpacity onPress={() => notificationsSheetRef.current?.close()}>
+                        <TouchableOpacity onPress={() => setSheetIndex(-1)}>
                             <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 1 }}>Dismiss</Text>
                         </TouchableOpacity>
                     </View>

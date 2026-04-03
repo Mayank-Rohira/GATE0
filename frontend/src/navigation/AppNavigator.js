@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { DefaultTheme } from '@react-navigation/native';
 import { ScanLine, FileText, UserCircle } from 'lucide-react-native';
 import { Dock } from '../components/ui/dock';
 import RoleSelectScreen from '../screens/RoleSelectScreen';
@@ -14,6 +14,7 @@ import ScannerScreen from '../screens/ScannerScreen';
 import ScanResultScreen from '../screens/ScanResultScreen';
 import LogsScreen from '../screens/LogsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import { COLORS } from '../constants/colors';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,9 +44,21 @@ function GuardTabNavigator() {
     );
 }
 
+const GATE0_THEME = {
+    ...DefaultTheme,
+    colors: {
+        ...DefaultTheme.colors,
+        background: COLORS.background.primary,
+        card: COLORS.background.card,
+        text: COLORS.text.primary,
+        border: COLORS.border.subtle,
+        primary: COLORS.accent.primary,
+    },
+};
+
 export default function AppNavigator() {
     return (
-        <NavigationContainer>
+        <NavigationContainer theme={GATE0_THEME}>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="RoleSelect" component={RoleSelectScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />

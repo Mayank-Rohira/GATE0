@@ -1,12 +1,11 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { View, Text, FlatList, RefreshControl, TextInput, ScrollView, Pressable, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, ArrowRight, FileText, User, Phone, MapPin, Clock, Download } from 'lucide-react-native';
+import { Search, FileText, User, MapPin, Download } from 'lucide-react-native';
 import { API_BASE } from '../config/api';
 import { getToken, getUser } from '../hooks/useAuth';
 import usePolling from '../hooks/usePolling';
 import { COLORS } from '../constants/colors';
-import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+// import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
@@ -17,10 +16,11 @@ export default function LogsScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All');
-    const [selectedLog, setSelectedLog] = useState(null);
+    // const [selectedLog, setSelectedLog] = useState(null);
 
-    const bottomSheetRef = useRef(null);
-    const snapPoints = useMemo(() => ['70%'], []);
+    // Removed BottomSheet ref as interaction is disabled
+    // const bottomSheetRef = useRef(null);
+    // const snapPoints = useMemo(() => ['70%'], []);
 
     const fetchLogs = useCallback(async () => {
         try {
@@ -96,10 +96,11 @@ export default function LogsScreen() {
         return name.substring(0, 2).toUpperCase();
     };
 
-    const handleLogPress = (log) => {
-        setSelectedLog(log);
-        bottomSheetRef.current?.snapToIndex(0);
-    };
+    // handleLogPress is no longer needed
+    // const handleLogPress = (log) => {
+    //     setSelectedLog(log);
+    //     bottomSheetRef.current?.snapToIndex(0);
+    // };
 
     const exportToCSV = async () => {
         if (filteredLogs.length === 0) return;
@@ -237,48 +238,44 @@ export default function LogsScreen() {
                         data={filteredLogs}
                         keyExtractor={(item, idx) => item.id ? String(item.id) : String(idx)}
                         renderItem={({ item }) => (
-                            <Pressable 
-                                onPress={() => handleLogPress(item)}
-                                style={({ pressed }) => [
+                            <View 
+                                style={[
                                     { 
                                         backgroundColor: COLORS.background.card, 
-                                        borderRadius: 12, 
+                                        borderRadius: 2, 
                                         padding: 24, 
-                                        marginBottom: 16, 
+                                        marginBottom: 1, // High density dividers
                                         borderWidth: 1,
-                                        borderColor: COLORS.border.subtle,
-                                        ...Platform.select({ ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 }, android: { elevation: 2 } })
-                                    },
-                                    pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
+                                        borderColor: COLORS.border.tactile,
+                                        borderLeftWidth: 4, // "Status Bar"
+                                        borderLeftColor: getStatusColor(item) 
+                                    }
                                 ]}
                             >
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16, borderWidth: 1, borderColor: COLORS.border.subtle }}>
-                                            <Text style={{ fontSize: 15, fontWeight: '800', color: COLORS.text.primary }}>{getInitials(item.visitor_name)}</Text>
-                                        </View>
                                         <View>
-                                            <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -0.2 }}>{item.visitor_name}</Text>
-                                            <Text style={{ fontSize: 11, color: getStatusColor(item), fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.5 }}>{getLogActionText(item)}</Text>
+                                            <Text style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.primary, letterSpacing: 0.5, textTransform: 'uppercase' }}>{item.visitor_name}</Text>
+                                            <Text style={{ fontSize: 10, color: COLORS.text.secondary, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 2 }}>{getLogActionText(item)}</Text>
                                         </View>
                                     </View>
                                     <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.primary, letterSpacing: 0.5 }}>{item.time}</Text>
+                                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, letterSpacing: 1, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }}>{item.time}</Text>
                                         <Text style={{ fontSize: 10, color: COLORS.text.muted, fontWeight: '800', textTransform: 'uppercase' }}>{item.date}</Text>
                                     </View>
                                 </View>
 
-                                <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: COLORS.border.subtle }}>
-                                        <User size={12} color={COLORS.text.muted} style={{ marginRight: 8 }} />
-                                        <Text style={{ fontSize: 11, color: COLORS.text.secondary, fontWeight: '800', textTransform: 'uppercase' }}>AUTH: {item.resident_name || 'Resident'}</Text>
+                                <View style={{ flexDirection: 'row', gap: 24, paddingLeft: 0 }}>
+                                    <View>
+                                        <Text style={{ fontSize: 9, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 4 }}>AUTHORIZATION</Text>
+                                        <Text style={{ fontSize: 11, color: COLORS.text.secondary, fontWeight: '800', textTransform: 'uppercase' }}>{item.resident_name || 'Resident'}</Text>
                                     </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: COLORS.border.subtle }}>
-                                        <MapPin size={12} color={COLORS.text.muted} style={{ marginRight: 8 }} />
+                                    <View>
+                                        <Text style={{ fontSize: 9, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 4 }}>LOCATION</Text>
                                         <Text style={{ fontSize: 11, color: COLORS.text.secondary, fontWeight: '800', textTransform: 'uppercase' }}>{item.house_number}</Text>
                                     </View>
                                 </View>
-                            </Pressable>
+                            </View>
                         )}
                         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.accent.primary} />}
                         showsVerticalScrollIndicator={false}
@@ -288,53 +285,12 @@ export default function LogsScreen() {
 
             </View>
 
-            {/* Log Detail Bottom Sheet */}
-            <BottomSheet
-                ref={bottomSheetRef}
-                index={-1}
-                snapPoints={snapPoints}
-                enablePanDownToClose
-                backdropComponent={renderBackdrop}
-                backgroundStyle={{ backgroundColor: COLORS.background.card }}
-                handleIndicatorStyle={{ backgroundColor: COLORS.border.subtle }}
-            >
-                {selectedLog && (
-                    <View style={{ padding: 24, flex: 1 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                            <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted }}>Pass Details</Text>
-                            <TouchableOpacity onPress={() => {
-                                bottomSheetRef.current?.close();
-                                setSelectedLog(null);
-                            }}>
-                                <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 1 }}>Dismiss</Text>
-                            </TouchableOpacity>
-                        </View>
-                        
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 32 }}>
-                            <View style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
-                                <Text style={{ fontSize: 24, fontWeight: '800', color: COLORS.text.primary }}>{getInitials(selectedLog.visitor_name)}</Text>
-                            </View>
-                            <View>
-                                <Text style={{ fontSize: 24, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -0.5 }}>{selectedLog.visitor_name}</Text>
-                                <View style={{ backgroundColor: COLORS.background.surface, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginTop: 4, alignSelf: 'flex-start' }}>
-                                    <Text style={{ fontSize: 13, color: COLORS.text.secondary, fontWeight: '700' }}>{selectedLog.service_name || 'General Visitor'}</Text>
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={{ backgroundColor: COLORS.background.surface, borderRadius: 24, padding: 20 }}>
-                            <LogDetailItem icon={<Phone size={18} color={COLORS.accent.primary} />} label="Mobile" value={selectedLog.visitor_mobile || 'N/A'} />
-                            <LogDetailItem icon={<User size={18} color={COLORS.accent.primary} />} label="Auth By" value={selectedLog.resident_name || 'N/A'} />
-                            <LogDetailItem icon={<MapPin size={18} color={COLORS.accent.secondary} />} label="Destination" value={`${selectedLog.house_number}, ${selectedLog.society_name}`} />
-                            <LogDetailItem icon={<Clock size={18} color={COLORS.accent.secondary} />} label="Timestamp" value={`${selectedLog.date} @ ${selectedLog.time}`} isLast />
-                        </View>
-                    </View>
-                )}
-            </BottomSheet>
-
+            {/* Log Detail Bottom Sheet removed as per request */}
         </SafeAreaView>
     );
 }
+
+// LogDetailItem kept for potential reuse/reference but not currently used in LogsScreen
 
 function LogDetailItem({ icon, label, value, isLast = false }) {
     return (

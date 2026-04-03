@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_BASE } from '../config/api';
 import { getToken } from '../hooks/useAuth';
-import { X, User, Phone, MapPin, Building2, Briefcase } from 'lucide-react-native';
+import { User, Phone, MapPin, Building2, Briefcase } from 'lucide-react-native';
 import { COLORS } from '../constants/colors';
 import { ButtonColorful } from '../components/ui/button-colorful';
 import { NeonButton } from '../components/ui/neon-button';
@@ -117,27 +117,21 @@ export default function ScanResultScreen({ navigation, route }) {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background.primary }}>
             
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 24, paddingTop: 20 }}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center' }}>
-                    <X size={22} color={COLORS.text.primary} />
-                </TouchableOpacity>
+            {/* Top Branding Header */}
+            <View style={{ paddingHorizontal: 32, paddingTop: 40, paddingBottom: 20 }}>
+                <Text style={{ fontSize: 13, fontWeight: '800', color: status === 'pending' ? COLORS.accent.primary : statusConfig.color, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 8 }}>SECURITY IDENTITY</Text>
+                <Text style={{ fontSize: 44, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -2, lineHeight: 44 }}>{status === 'pending' ? 'WAITING...' : statusConfig.label}</Text>
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
                 
                 <View style={{ backgroundColor: COLORS.background.surface, borderRadius: 32, padding: 24, marginBottom: 32, ...Platform.select({ ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.1, shadowRadius: 24 }, android: { elevation: 2 } }) }}>
                     
-                    {/* Status Badge */}
-                    <View style={{ backgroundColor: statusConfig.bg, alignSelf: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, marginBottom: 32 }}>
-                        <Text style={{ color: statusConfig.color, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2 }}>
-                            {loading ? 'CALIBRATING...' : statusConfig.label}
-                        </Text>
+                    {/* Terminal Data Header */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, borderBottomWidth: 1, borderBottomColor: COLORS.border.tactile, paddingBottom: 16 }}>
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, letterSpacing: 2, textTransform: 'uppercase' }}>UNIT_SCAN_LOG: {passData.id}</Text>
                     </View>
 
-                    <Text style={{ fontSize: 11, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontWeight: '800' }}>SECURITY TOKEN</Text>
-                    <View style={{ marginBottom: 32, backgroundColor: COLORS.background.primary, padding: 16, borderRadius: 12 }}>
-                        <Text style={{ fontSize: 18, color: COLORS.text.primary, fontWeight: '800', letterSpacing: 1 }}>{passData.id}</Text>
-                    </View>
 
                     <Text style={{ fontSize: 11, textTransform: 'uppercase', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 16, fontWeight: '800' }}>VISITOR INTEL</Text>
                     <View style={{ gap: 20, marginBottom: 40 }}>
@@ -154,7 +148,7 @@ export default function ScanResultScreen({ navigation, route }) {
 
                 </View>
 
-                {status === 'pending' && !error && !loading ? (
+                {status === 'pending' && !error && !loading && (
                     <View style={{ gap: 16 }}>
                         <ButtonColorful 
                             title="GRANT ACCESS" 
@@ -180,13 +174,18 @@ export default function ScanResultScreen({ navigation, route }) {
                             <Text selectable={true} style={{ color: COLORS.status.error, fontWeight: '800', fontSize: 14, letterSpacing: 1.5 }}>DENY & FLAG</Text>
                         </TouchableOpacity>
                     </View>
-                ) : (
-                    <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-                        <Text style={{ color: COLORS.text.muted, fontSize: 13, fontFamily: 'Montserrat', textTransform: 'uppercase', letterSpacing: 1 }}>
-                            {status === 'approved' ? 'Entry Logged Successfully' : 'Pass Rejected'}
-                        </Text>
-                    </View>
                 )}
+
+                {/* Final Exit Action */}
+                <View style={{ marginTop: 20 }}>
+                    <ButtonColorful 
+                        title="RETURN TO TERMINAL" 
+                        onPress={() => navigation.goBack()} 
+                        width="100%" 
+                        height={64} 
+                        style={{ borderRadius: 12 }}
+                    />
+                </View>
 
             </ScrollView>
         </SafeAreaView>

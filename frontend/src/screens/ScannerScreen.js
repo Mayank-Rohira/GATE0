@@ -51,9 +51,9 @@ function ScanLineAnimated({ scanned }) {
 
 export default function ScannerScreen({ navigation }) {
     const [permission, requestPermission] = useCameraPermissions();
-    const [scanned, setScanned] = useState(false);
     const [torch, setTorch] = useState(false);
     const [manualCode, setManualCode] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
     const [userInitials, setUserInitials] = useState('GR');
     const isFocused = useIsFocused();
     
@@ -75,16 +75,17 @@ export default function ScannerScreen({ navigation }) {
     }, [isFocused]);
 
     const handleBarcodeScanned = useCallback(({ data }) => {
-        if (scanned) return;
+        if (scanned || isVerifying) return;
         setScanned(true);
+        setIsVerifying(true);
 
-        
         // Flash screen logic
         flashOpacity.value = withSequence(
             withTiming(1, { duration: 100 }),
             withTiming(0, { duration: 200 })
         );
 
+        // Synthetic verification delay for "high-stakes" feel
         setTimeout(() => {
             try {
                 // Try to decrypt the data first
@@ -105,10 +106,10 @@ export default function ScannerScreen({ navigation }) {
                 }
             }
             
-            // Invalid
-            setScanned(false);
-        }, 300);
-    }, [scanned, navigation]);
+                setIsVerifying(false); // Reset for next time if invalid
+                setScanned(false);
+        }, 1200); // 1.2s synthetic delay
+    }, [scanned, isVerifying, navigation]);
 
     const handleManualSubmit = () => {
         if (!manualCode.trim()) return;
@@ -132,7 +133,9 @@ export default function ScannerScreen({ navigation }) {
         backgroundColor: COLORS.status.success,
     }));
 
-    if (!permission) return <View />;
+    if (!permission) return (
+        <View style={{ flex: 1, backgroundColor: COLORS.background.primary }} />
+    );
 
     if (!permission.granted) {
         return (
@@ -185,8 +188,12 @@ export default function ScannerScreen({ navigation }) {
                             </View>
 
                             <View style={{ alignItems: 'center', marginTop: 40 }}>
-                                <Text style={{ fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2.5, color: '#ffffff', marginBottom: 8 }}>Ready to Scan</Text>
-                                <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center', paddingHorizontal: 40 }}>Align the pass QR code within the frame for verification.</Text>
+                                <Text style={{ fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 3, color: COLORS.accent.primary, marginBottom: 8 }}>{isVerifying ? 'NETWORK_SYNC_ACTIVE' : 'SYSTEM_READY'}</Text>
+                                <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                                    <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: isVerifying ? COLORS.accent.primary : COLORS.status.success }} />
+                                    <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#ffffff', opacity: 0.2 }} />
+                                    <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#ffffff', opacity: 0.2 }} />
+                                </View>
                             </View>
                         </View>
 
@@ -208,7 +215,7 @@ export default function ScannerScreen({ navigation }) {
                                         borderRadius: 24,
                                     }}>
                                         <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '800', letterSpacing: 2 }}>
-                                            {scanned ? 'VERIFYING...' : 'READY'}
+                                            {isVerifying ? 'RETRIEVING DATA...' : scanned ? 'VERIFYING...' : 'SYSTEM READY'}
                                         </Text>
                                     </View>
                                 </View>
