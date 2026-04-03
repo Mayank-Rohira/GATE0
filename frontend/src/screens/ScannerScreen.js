@@ -11,6 +11,7 @@ import { COLORS } from '../constants/colors';
 import { NeonButton } from '../components/ui/neon-button';
 import { ButtonColorful } from '../components/ui/button-colorful';
 import { getUser } from '../hooks/useAuth';
+import { decryptPassData } from '../utils/crypto';
 
 function ScanLineAnimated({ scanned }) {
     const translateY = useSharedValue(0);
@@ -86,12 +87,18 @@ export default function ScannerScreen({ navigation }) {
 
         setTimeout(() => {
             try {
-                const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-                if (parsedData && parsedData.id && String(parsedData.id).startsWith('PASS_')) {
-                    navigation.navigate('ScanResult', { passData: parsedData });
+                // Try to decrypt the data first
+                const decryptedData = decryptPassData(data);
+                const parsedData = typeof decryptedData === 'string' ? JSON.parse(decryptedData) : decryptedData;
+                
+                if (parsedData && (parsedData.id || parsedData.pass_code)) {
+                    // Normalize standard pass data
+                    const passToNavigate = parsedData.id ? parsedData : { ...parsedData, id: parsedData.pass_code };
+                    navigation.navigate('ScanResult', { passData: passToNavigate });
                     return;
                 }
             } catch (e) {
+                // Legacy fallback or raw scan
                 if (typeof data === 'string' && data.startsWith('PASS_')) {
                     navigation.navigate('ScanResult', { passData: { id: data } });
                     return;

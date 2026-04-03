@@ -5,6 +5,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, wit
 import QRCode from 'react-native-qrcode-svg';
 import { API_BASE } from '../config/api';
 import { getToken, getUser } from '../hooks/useAuth';
+import { encryptPassData } from '../utils/crypto';
 import { UserCircle, Inbox, X, Share2, MapPin, ShieldCheck, CheckCircle2 } from 'lucide-react-native';
 import usePolling from '../hooks/usePolling';
 import PassCard from '../components/PassCard';
@@ -104,7 +105,7 @@ export default function VisitorDashboard({ navigation }) {
             house_number: pass.house_number,
             society_name: pass.society_name,
         };
-        return JSON.stringify(payload);
+        return encryptPassData(payload);
     };
 
     return (

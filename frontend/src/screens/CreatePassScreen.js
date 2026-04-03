@@ -2,8 +2,10 @@ import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Platform, KeyboardAvoidingView, ScrollView, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
-import { ArrowLeft, Check, User, Phone, Share2, CheckCircle2 } from 'lucide-react-native';
+import { ArrowLeft, Check, User, Phone, Share2, CheckCircle2, Car, ShoppingBag, Utensils, Package, Wrench, Users } from 'lucide-react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSpring } from 'react-native-reanimated';
+
+import { encryptPassData } from '../utils/crypto';
 
 import { API_BASE } from '../config/api';
 import { getToken } from '../hooks/useAuth';
@@ -12,7 +14,19 @@ import { ButtonColorful } from '../components/ui/button-colorful';
 import { NeonButton } from '../components/ui/neon-button';
 import { Modal } from 'react-native';
 
-const SERVICES = ['Zomato', 'Swiggy', 'Zepto', 'Amazon', 'Flipkart', 'Visitor', 'Other'];
+const SERVICES = [
+    { label: 'Cabs', icon: Car },
+    { label: 'Food', icon: Utensils },
+    { label: 'Groceries', icon: ShoppingBag },
+    { label: 'Swiggy', icon: Package },
+    { label: 'Zomato', icon: Package },
+    { label: 'Zepto', icon: ShoppingBag },
+    { label: 'Amazon', icon: Package },
+    { label: 'Flipkart', icon: Package },
+    { label: 'Visitor', icon: Users },
+    { label: 'Service Unit', icon: Wrench },
+    { label: 'Other', icon: CheckCircle2 }
+];
 
 function ShimmerText({ value, style, placeholderWidth }) {
     const opacity = useSharedValue(0.3);
@@ -109,7 +123,7 @@ export default function CreatePassScreen({ navigation }) {
                     }}>
                         <View style={{ backgroundColor: '#ffffff', padding: 12, borderRadius: 24, marginBottom: 24 }}>
                             <QRCode
-                                value={createdPass.qr_content ? (typeof createdPass.qr_content === 'string' ? createdPass.qr_content : JSON.stringify(createdPass.qr_content)) : (createdPass.pass_code || "PASS")}
+                                value={encryptPassData(createdPass)}
                                 size={200}
                                 color="#000000"
                                 backgroundColor="#ffffff"
@@ -224,29 +238,35 @@ export default function CreatePassScreen({ navigation }) {
                     <View style={{ backgroundColor: COLORS.background.primary, borderRadius: 32, padding: 24, width: '100%', maxWidth: 450 }}>
                         <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 3, color: COLORS.text.muted, marginBottom: 24, textAlign: 'center' }}>Select Service</Text>
  
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                            {SERVICES.map((srv) => (
-                                <TouchableOpacity
-                                    key={srv}
-                                    onPress={() => {
-                                        setServiceName(srv);
-                                        setSelectVisible(false);
-                                    }}
-                                    style={{
-                                        width: '48%',
-                                        height: 60,
-                                        backgroundColor: serviceName === srv ? COLORS.accent.primary : COLORS.background.surface,
-                                        borderRadius: 16,
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        marginBottom: 16,
-                                        flexDirection: 'row'
-                                    }}
-                                >
-                                    <Text style={{ color: serviceName === srv ? COLORS.background.primary : COLORS.text.secondary, fontSize: 15, fontWeight: '800' }}>{srv}</Text>
-                                    {serviceName === srv && <Check size={18} color={COLORS.background.primary} style={{ marginLeft: 8 }} />}
-                                </TouchableOpacity>
-                            ))}
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 4 }}>
+                            {SERVICES.map((srv) => {
+                                const IconComp = srv.icon;
+                                const isSelected = serviceName === srv.label;
+                                return (
+                                    <TouchableOpacity
+                                        key={srv.label}
+                                        onPress={() => {
+                                            setServiceName(srv.label);
+                                            setSelectVisible(false);
+                                        }}
+                                        style={{
+                                            width: '48%',
+                                            height: 64,
+                                            backgroundColor: isSelected ? COLORS.accent.primary : COLORS.background.surface,
+                                            borderRadius: 16,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginBottom: 16,
+                                            flexDirection: 'row',
+                                            borderWidth: 1,
+                                            borderColor: isSelected ? COLORS.accent.primary : COLORS.border.subtle
+                                        }}
+                                    >
+                                        <IconComp size={18} color={isSelected ? COLORS.background.primary : COLORS.text.muted} style={{ marginRight: 8 }} />
+                                        <Text style={{ color: isSelected ? COLORS.background.primary : COLORS.text.secondary, fontSize: 13, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 }}>{srv.label}</Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
  
                         <TouchableOpacity

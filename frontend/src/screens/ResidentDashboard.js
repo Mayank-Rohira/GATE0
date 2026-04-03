@@ -62,10 +62,11 @@ export default function ResidentDashboard({ navigation }) {
     const [passes, setPasses] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [user, setUserData] = useState(null);
-    const [filterPeriod, setFilterPeriod] = useState('All'); // 'All', 'Active', 'Approved'
-
+    const [notifications, setNotifications] = useState([]);
+    const [hasUnread, setHasUnread] = useState(false);
     const notificationsSheetRef = useRef(null);
-    const snapPoints = useMemo(() => ['30%'], []);
+    const snapPoints = useMemo(() => ['40%'], []);
+    const prevApprovedCount = useRef(0);
 
     const initUser = async () => {
         const u = await getUser();
@@ -84,7 +85,25 @@ export default function ResidentDashboard({ navigation }) {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await res.json();
-            if (data.passes) setPasses(data.passes);
+            if (data.passes) {
+                const currentPasses = data.passes;
+                setPasses(currentPasses);
+
+                // Notification Logic
+                const approved = currentPasses.filter(p => p.status === 'approved');
+                if (approved.length > prevApprovedCount.current) {
+                    const newApproved = approved[approved.length - 1];
+                    const newNote = {
+                        id: Date.now(),
+                        title: 'Pass Approved',
+                        body: `Your pass for ${newApproved.visitor_name} has been approved.`,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    setNotifications(prev => [newNote, ...prev]);
+                    setHasUnread(true);
+                }
+                prevApprovedCount.current = approved.length;
+            }
         } catch (err) {
             // silent fail on poll
         }
@@ -133,6 +152,7 @@ export default function ResidentDashboard({ navigation }) {
     };
 
     const handleBellPress = () => {
+        setHasUnread(false);
         notificationsSheetRef.current?.expand();
     };
 
@@ -148,12 +168,15 @@ export default function ResidentDashboard({ navigation }) {
                 <View>
                     <Text selectable={true} style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>GATE0</Text>
                     <Text selectable={true} style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2 }}>
-                        {user ? `${user.house_number}` : 'AUTH SECURE'}
+                        {user ? 'RESIDENT TERMINAL' : 'AUTH SECURE'}
                     </Text>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity onPress={handleBellPress} style={{ width: 48, height: 48, backgroundColor: COLORS.background.surface, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                         <Bell size={22} color={COLORS.text.primary} />
+                        {hasUnread && (
+                            <View style={{ position: 'absolute', top: 12, right: 12, width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.accent.primary, borderWidth: 2, borderColor: COLORS.background.surface }} />
+                        )}
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
                         <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.accent.tertiary, alignItems: 'center', justifyContent: 'center' }}>
@@ -240,9 +263,26 @@ export default function ResidentDashboard({ navigation }) {
                 backgroundStyle={{ backgroundColor: COLORS.background.card }}
                 handleIndicatorStyle={{ backgroundColor: COLORS.border.subtle }}
             >
-                <View style={{ padding: 24, flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: -20 }}>
-                    <Bell size={40} color={COLORS.border.subtle} style={{ marginBottom: 16 }} />
-                    <Text style={{ fontSize: 17, fontWeight: '600', color: COLORS.text.secondary, fontFamily: 'Montserrat' }}>No new notifications</Text>
+                <View style={{ padding: 24, flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, letterSpacing: 2, marginBottom: 20, textTransform: 'uppercase' }}>Security Notifications</Text>
+                    {notifications.length === 0 ? (
+                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: -40 }}>
+                            <Bell size={40} color={COLORS.border.subtle} style={{ marginBottom: 16 }} />
+                            <Text style={{ fontSize: 17, fontWeight: '600', color: COLORS.text.secondary }}>No new notifications</Text>
+                        </View>
+                    ) : (
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            {notifications.map(note => (
+                                <View key={note.id} style={{ backgroundColor: COLORS.background.surface, padding: 20, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border.subtle }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text.primary }}>{note.title}</Text>
+                                        <Text style={{ fontSize: 11, color: COLORS.text.muted }}>{note.time}</Text>
+                                    </View>
+                                    <Text style={{ fontSize: 14, color: COLORS.text.secondary, lineHeight: 20 }}>{note.body}</Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    )}
                 </View>
             </BottomSheet>
 

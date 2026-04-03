@@ -12,25 +12,42 @@ export default function ProfileScreen({ navigation }) {
         getUser().then(setUser);
     }, []);
 
-    const handleLogout = () => {
-        Alert.alert(
-            "Sign Out",
-            "Are you sure you want to log out of GATE0?",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Confirm",
-                    style: "destructive",
-                    onPress: async () => {
-                        await clearSession();
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: 'RoleSelect' }],
-                        });
+    const handleLogout = async () => {
+        const performLogout = async () => {
+            await clearSession();
+            
+            // For Web, a hard redirect is often cleaner to ensure all states are cleared
+            if (Platform.OS === 'web') {
+                window.location.href = '/';
+                return;
+            }
+
+            // For Mobile, use the reset logic targeting the root if possible
+            const root = navigation.getParent() || navigation;
+            root.reset({
+                index: 0,
+                routes: [{ name: 'RoleSelect' }],
+            });
+        };
+
+        if (Platform.OS === 'web') {
+            if (window.confirm("Are you sure you want to log out of GATE0?")) {
+                await performLogout();
+            }
+        } else {
+            Alert.alert(
+                "Sign Out",
+                "Are you sure you want to log out of GATE0?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Confirm",
+                        style: "destructive",
+                        onPress: performLogout
                     }
-                }
-            ]
-        );
+                ]
+            );
+        }
     };
 
     if (!user) return null;
@@ -119,8 +136,9 @@ export default function ProfileScreen({ navigation }) {
                 </View>
 
                 <View style={{ gap: 12 }}>
-                    <ProfileMenuItem icon={<RefreshCcw size={20} color={COLORS.accent.primary} />} label="Update Credentials" />
-                    <ProfileMenuItem icon={<HelpCircle size={20} color={COLORS.accent.primary} />} label="Security Support" />
+                    <View style={{ padding: 24, backgroundColor: COLORS.background.surface, borderRadius: 24, borderStyle: 'dashed', borderWidth: 1, borderColor: COLORS.border.subtle, alignItems: 'center' }}>
+                        <Text style={{ color: COLORS.text.muted, fontSize: 12, fontWeight: '700', letterSpacing: 1 }}>SETTINGS LOCKED BY UNIT</Text>
+                    </View>
                 </View>
 
                 <View style={{ flex: 1 }} />
@@ -134,13 +152,15 @@ export default function ProfileScreen({ navigation }) {
                         alignItems: 'center', 
                         justifyContent: 'center', 
                         height: 64, 
-                        backgroundColor: COLORS.status.errorBg, 
+                        backgroundColor: '#2a1a1a', // Darker, more premium red background
                         borderRadius: 20, 
-                        marginBottom: 32
+                        marginBottom: 32,
+                        borderWidth: 1,
+                        borderColor: 'rgba(238, 125, 119, 0.2)'
                     }}
                 >
                     <LogOut size={22} color={COLORS.status.error} style={{ marginRight: 12 }} />
-                    <Text style={{ fontSize: 15, fontWeight: '800', color: COLORS.status.error, letterSpacing: 1, textTransform: 'uppercase' }}>Terminate Session</Text>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: COLORS.status.error, letterSpacing: 2, textTransform: 'uppercase' }}>Terminate Session</Text>
                 </TouchableOpacity>
 
             </View>

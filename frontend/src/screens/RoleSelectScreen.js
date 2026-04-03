@@ -35,6 +35,8 @@ import Svg, { Rect, G, Defs, LinearGradient, Stop, Ellipse, Circle } from 'react
 import { COLORS } from '../constants/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const APP_WIDTH = Math.min(SCREEN_WIDTH, 420);
+
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -56,42 +58,21 @@ function BackgroundRender({ progress }) {
     
     return (
         <View style={styles.backgroundWrapper}>
-            <View style={styles.backgroundContainer}>
-                {slices.map((i) => {
-                    const startP = i * 0.15;
-                    const endP = startP + 0.3;
-                    
-                    const sliceStyle = useAnimatedStyle(() => {
-                        const opacity = interpolate(progress.value, [startP, endP], [0, 1], Extrapolation.CLAMP);
-                        const translateX = interpolate(progress.value, [startP, endP], [i % 2 === 0 ? -15 : 15, 0], Extrapolation.CLAMP);
-                        
-                        return {
-                            opacity,
-                            transform: [{ translateX }]
-                        };
-                    });
-
-                    return (
-                        <Animated.View 
-                            key={i} 
-                            style={[
-                                styles.sliceWrapper, 
-                                { height: SCREEN_HEIGHT / 4, top: (SCREEN_HEIGHT / 4) * i },
-                                sliceStyle
-                            ]}
-                        >
-                            <Image 
-                                source={require('../../assets/branding/manhattan_new.jpg')}
-                                style={[
-                                    styles.sliceImage,
-                                    { top: -(SCREEN_HEIGHT / 4) * i }
-                                ]}
-                                resizeMode="cover"
-                            />
-                        </Animated.View>
-                    );
-                })}
-            </View>
+            <Animated.View 
+                style={[
+                    styles.backgroundContainer,
+                    useAnimatedStyle(() => ({
+                        opacity: interpolate(progress.value, [0, 0.3], [0, 1], Extrapolation.CLAMP),
+                        transform: [{ scale: interpolate(progress.value, [0, 0.4], [1.05, 1], Extrapolation.CLAMP) }]
+                    }))
+                ]}
+            >
+                <Image 
+                    source={require('../../assets/branding/manhattan_new.jpg')}
+                    style={styles.backgroundImage}
+                    resizeMode="cover"
+                />
+            </Animated.View>
 
             {/* High-Speed Scanline (Holographic Effect) */}
             <Animated.View 
@@ -112,18 +93,16 @@ function BackgroundRender({ progress }) {
 // --- Interaction Components ---
 
 function RoleCard({ label, description, icon: Icon, onPress, index, progress }) {
-    // 0.9 - 1.0: Role select appearing (4.5s-5s)
-    const cardProgress = 0.9 + (index * 0.03); // Stagger cards
+    // 0.75 - 1.0: Role select appearing (3.75s-5s)
+    const cardStart = 0.75 + (index * 0.05); 
 
     const animatedStyle = useAnimatedStyle(() => {
-        const opacity = interpolate(progress.value, [cardProgress, cardProgress + 0.05], [0, 1], Extrapolation.CLAMP);
-        const translateY = interpolate(progress.value, [cardProgress, cardProgress + 0.05], [30, 0], Extrapolation.CLAMP);
-        const borderOpacity = interpolate(progress.value, [cardProgress, cardProgress + 0.05], [0, 1], Extrapolation.CLAMP);
-
+        const opacity = interpolate(progress.value, [cardStart, cardStart + 0.1], [0, 1], Extrapolation.CLAMP);
+        const translateY = interpolate(progress.value, [cardStart, cardStart + 0.1], [20, 0], Extrapolation.CLAMP);
+        
         return {
             opacity,
             transform: [{ translateY }],
-            borderColor: `rgba(37, 40, 48, ${borderOpacity})` // COLORS.border.tactile
         };
     });
 
@@ -160,14 +139,14 @@ export default function RoleSelectScreen({ navigation }) {
 
 
     const brandStyle = useAnimatedStyle(() => ({
-        opacity: interpolate(masterProgress.value, [0.8, 0.88], [0, 1], Extrapolation.CLAMP),
-        transform: [{ translateY: interpolate(masterProgress.value, [0.8, 0.88], [20, 0], Extrapolation.CLAMP) }],
-        letterSpacing: interpolate(masterProgress.value, [0.8, 0.95], [10, 18], Extrapolation.CLAMP),
+        opacity: interpolate(masterProgress.value, [0.35, 0.5], [0, 1], Extrapolation.CLAMP),
+        transform: [{ translateY: interpolate(masterProgress.value, [0.35, 0.5], [10, 0], Extrapolation.CLAMP) }],
+        letterSpacing: interpolate(masterProgress.value, [0.35, 0.6], [10, 18], Extrapolation.CLAMP),
     }));
 
     const subStyle = useAnimatedStyle(() => {
-        const opacity = interpolate(masterProgress.value, [0.85, 0.92], [0, 1], Extrapolation.CLAMP);
-        const color = interpolateColor(masterProgress.value, [0.85, 0.95], ['rgba(255,255,255,0.4)', '#c8963c']);
+        const opacity = interpolate(masterProgress.value, [0.55, 0.7], [0, 1], Extrapolation.CLAMP);
+        const color = interpolateColor(masterProgress.value, [0.55, 0.7], ['rgba(245, 197, 66, 0)', 'rgba(245, 197, 66, 1)']);
         
         return {
             opacity,
@@ -186,7 +165,8 @@ export default function RoleSelectScreen({ navigation }) {
                             GATE0
                         </Animated.Text>
 
-                        <Animated.View style={styles.subtitleContainer}>
+                        <Animated.View style={[styles.subtitleContainer, { opacity: subStyle.opacity }]}>
+                            <View style={styles.subtitleGlow} />
                             <Animated.Text style={[styles.subtitle, subStyle]}>
                                 Intelligent residential access
                             </Animated.Text>
@@ -234,22 +214,21 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
     },
     backgroundContainer: {
-        width: '100%',
-        maxWidth: 420,
+        width: APP_WIDTH,
         height: SCREEN_HEIGHT,
         overflow: 'hidden',
+        backgroundColor: '#000',
     },
-    sliceWrapper: {
+    backgroundImage: {
+        width: APP_WIDTH,
+        height: SCREEN_HEIGHT * 1.2,
         position: 'absolute',
-        left: 0,
-        width: '100%',
-        overflow: 'hidden',
-    },
-    sliceImage: {
-        width: 420,
-        height: SCREEN_HEIGHT,
-        position: 'absolute',
-        left: 0,
+        top: 0,
+        ...Platform.select({
+            web: {
+                filter: 'contrast(1.2) brightness(0.7) saturate(0.8)',
+            }
+        })
     },
     scanline: {
         position: 'absolute',
@@ -297,17 +276,28 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     subtitle: {
-        fontSize: 11,
-        letterSpacing: 5,
+        fontSize: SCREEN_WIDTH > 400 ? 12 : 11,
+        letterSpacing: 8,
         textTransform: 'uppercase',
         textAlign: 'center',
-        fontWeight: '700',
-        textShadowColor: '#c8963c',
+        fontWeight: '900',
+        textShadowColor: 'rgba(200, 150, 60, 0.6)', 
         textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 10,
+        textShadowRadius: 15,
         ...Platform.select({
             web: { fontFamily: 'Outfit, sans-serif' },
         })
+    },
+    subtitleGlow: {
+        position: 'absolute',
+        top: -20,
+        left: -40,
+        right: -40,
+        bottom: -20,
+        backgroundColor: 'rgba(200, 150, 60, 0.15)',
+        borderRadius: 40,
+        filter: Platform.OS === 'web' ? 'blur(30px)' : undefined,
+        zIndex: -1,
     },
     rolesGrid: {
         width: '100%',
