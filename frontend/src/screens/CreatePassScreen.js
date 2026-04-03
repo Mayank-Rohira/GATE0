@@ -91,8 +91,8 @@ export default function CreatePassScreen({ navigation }) {
                     <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: COLORS.status.successBg, alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
                         <Check size={32} color={COLORS.status.success} />
                     </View>
-                    <Text style={{ color: COLORS.text.primary, fontSize: 34, fontWeight: '800', marginBottom: 8, letterSpacing: -1 }}>TOKEN ACTIVE</Text>
-                    <Text style={{ color: COLORS.text.secondary, fontSize: 15, textAlign: 'center', marginBottom: 40, paddingHorizontal: 20 }}>The security token has been generated and broadcasted to the sector.</Text>
+                    <Text style={{ color: COLORS.text.primary, fontSize: 34, fontWeight: '800', marginBottom: 8, letterSpacing: -1 }}>PASS GENERATED</Text>
+                    <Text style={{ color: COLORS.text.secondary, fontSize: 15, textAlign: 'center', marginBottom: 40, paddingHorizontal: 20 }}>Your visitor pass is ready to share. They can use this code for entry today.</Text>
 
                     <View style={{ 
                         backgroundColor: COLORS.background.card, 
@@ -146,16 +146,16 @@ export default function CreatePassScreen({ navigation }) {
                                 <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 12 }}>
                                     <ArrowLeft color={COLORS.text.primary} size={28} />
                                 </TouchableOpacity>
-                                <Text style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>TOKEN</Text>
+                                <Text style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>NEW PASS</Text>
                             </View>
                             <View style={{ backgroundColor: COLORS.status.successBg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 4, alignSelf: 'flex-start' }}>
-                                <Text style={{ color: COLORS.status.success, fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>Issue Authority</Text>
+                                <Text style={{ color: COLORS.status.success, fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>Security Verified</Text>
                             </View>
                         </View>
                     </View>
 
                     <View style={{ marginBottom: 24 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, marginLeft: 4 }}>Service Sector</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, marginLeft: 4 }}>Service Category</Text>
                         <TouchableOpacity
                             onPress={() => setSelectVisible(true)}
                             style={{ backgroundColor: COLORS.background.surface, borderRadius: 16, height: 60, paddingHorizontal: 20, justifyContent: 'center' }}
@@ -167,7 +167,7 @@ export default function CreatePassScreen({ navigation }) {
                     </View>
  
                     <View style={{ marginBottom: 24 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, marginLeft: 4 }}>Subject Name</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, marginLeft: 4 }}>Visitor Name</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 16, height: 60, paddingHorizontal: 20 }}>
                             <User size={20} color={COLORS.accent.primary} style={{ marginRight: 16 }} />
                             <TextInput
@@ -181,7 +181,7 @@ export default function CreatePassScreen({ navigation }) {
                     </View>
  
                     <View style={{ marginBottom: 40 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, marginLeft: 4 }}>Contact Intel</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, marginLeft: 4 }}>Contact Details</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 16, height: 60, paddingHorizontal: 20 }}>
                             <Phone size={20} color={COLORS.accent.primary} style={{ marginRight: 16 }} />
                             <TextInput
@@ -222,7 +222,7 @@ export default function CreatePassScreen({ navigation }) {
             >
                 <View style={{ flex: 1, backgroundColor: 'rgba(5, 5, 10, 0.8)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
                     <View style={{ backgroundColor: COLORS.background.primary, borderRadius: 32, padding: 24, width: '100%', maxWidth: 450 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 3, color: COLORS.text.muted, marginBottom: 24, textAlign: 'center' }}>Service Sector Select</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 3, color: COLORS.text.muted, marginBottom: 24, textAlign: 'center' }}>Select Service</Text>
  
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                             {SERVICES.map((srv) => (

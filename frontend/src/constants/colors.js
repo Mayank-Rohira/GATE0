@@ -8,6 +8,7 @@ export const COLORS = {
     input: '#0e1014',
   },
   border: {
+    base: '#1c1e22',   // Refined Architectural Border
     subtle: '#1c1e24',
     tactile: '#252830', // Architectural edge
     active: '#c8963c', // Prime Gold Accent
@@ -30,7 +31,7 @@ export const COLORS = {
   },
   text: {
     primary: '#e8e2d9', // Soft Oyster White
-    secondary: '#5a5248', // Muted Gold-Gray
+    secondary: '#4a4540', // Muted Gray-Gold (Precisely matched)
     muted: '#3a3530', // Deep Shadow Text
     onPrimary: '#0a0b0d',
     brand: '#f5ede0', // Hero Text Gold-White

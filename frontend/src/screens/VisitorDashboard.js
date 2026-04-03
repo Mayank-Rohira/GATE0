@@ -32,7 +32,7 @@ function LiveIndicator() {
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, alignSelf: 'flex-start' }}>
             <Animated.View style={[{ width: 8, height: 8, borderRadius: 4, marginRight: 8 }, animatedStyle]} />
-            <Text style={{ fontSize: 11, fontWeight: '700', color: COLORS.text.secondary, textTransform: 'uppercase', letterSpacing: 1 }}>Live Sector Stream</Text>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: COLORS.text.secondary, textTransform: 'uppercase', letterSpacing: 1 }}>Live Pass Feed</Text>
         </View>
     );
 }
@@ -136,9 +136,9 @@ export default function VisitorDashboard({ navigation }) {
                         <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
                             <Inbox size={40} color={COLORS.text.muted} />
                         </View>
-                        <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, textAlign: 'center' }}>Stream Offline</Text>
+                        <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, textAlign: 'center' }}>No Passes</Text>
                         <Text style={{ fontSize: 15, color: COLORS.text.secondary, textAlign: 'center', lineHeight: 22 }}>
-                            No security tokens have been assigned to your sector. New passes will appear here in real-time.
+                            No passes have been assigned to your mobile number. New passes will appear here in real-time.
                         </Text>
                     </View>
                 ) : (
@@ -245,7 +245,7 @@ export default function VisitorDashboard({ navigation }) {
                                         <ShieldCheck size={16} color={COLORS.accent.primary} style={{ marginRight: 8 }} />
                                     )}
                                     <Text style={{ color: selectedPass?.status === 'approved' ? COLORS.status.success : COLORS.accent.primary, fontSize: 11, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase' }}>
-                                        {selectedPass?.status === 'approved' ? 'ENTRY AUTHORIZED' : 'SECURE TOKEN ACTIVE'}
+                                        {selectedPass?.status === 'approved' ? 'ENTRY AUTHORIZED' : 'PASS ACTIVE'}
                                     </Text>
                                 </View>
                             </View>

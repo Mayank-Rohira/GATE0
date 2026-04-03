@@ -175,21 +175,21 @@ export default function ResidentDashboard({ navigation }) {
             {/* Section Row */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 20 }}>
                 <Text style={{ fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 2.5, color: COLORS.text.muted }}>
-                    {filterPeriod === 'All' ? 'Intelligence Feed' : `${filterPeriod} Stream`}
+                    {filterPeriod === 'All' ? 'Recent Activity' : `${filterPeriod} History`}
                 </Text>
                 <TouchableOpacity 
                     onPress={() => navigation.navigate('CreatePass')}
                     style={{ backgroundColor: COLORS.background.surface, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
                 >
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.accent.primary }}>+ REQUEST ACCESS</Text>
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.accent.primary }}>+ GENERATE QR</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Pass List */}
             {sorted.length === 0 ? (
                 <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40, paddingHorizontal: 40 }}>
-                    <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, textAlign: 'center' }}>System Standby</Text>
-                    <Text style={{ fontSize: 15, color: COLORS.text.secondary, textAlign: 'center', lineHeight: 22 }}>No active security logs found for this sector. Request a new pass to begin monitoring.</Text>
+                    <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, textAlign: 'center' }}>No Passes Found</Text>
+                    <Text style={{ fontSize: 15, color: COLORS.text.secondary, textAlign: 'center', lineHeight: 22 }}>You don't have any active passes. Generate a new QR code to invite visitors.</Text>
                 </View>
             ) : (
                 <FlatList

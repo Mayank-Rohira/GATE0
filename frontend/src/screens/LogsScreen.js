@@ -164,8 +164,8 @@ export default function LogsScreen() {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                     <View>
                         <Text style={{ fontSize: 38, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -2 }}>LOGS</Text>
-                        <View style={{ backgroundColor: COLORS.background.cardHigh, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 8, marginTop: 12, alignSelf: 'flex-start', borderWidth: 1, borderColor: COLORS.border.tactile }}>
-                            <Text selectable={true} style={{ color: COLORS.accent.primary, fontSize: 11, fontWeight: '800', letterSpacing: 2.5, textTransform: 'uppercase' }}>Security Intel</Text>
+                        <View style={{ backgroundColor: COLORS.background.cardHigh, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, marginTop: 12, alignSelf: 'flex-start', borderWidth: 1, borderColor: COLORS.border.tactile }}>
+                            <Text selectable={true} style={{ color: COLORS.accent.primary, fontSize: 11, fontWeight: '800', letterSpacing: 2.5, textTransform: 'uppercase' }}>Recent Activity</Text>
                         </View>
                     </View>
                     <TouchableOpacity 
@@ -179,13 +179,13 @@ export default function LogsScreen() {
                 {/* Search Bar */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 8, height: 56, paddingHorizontal: 18, marginBottom: 24, borderWidth: 1, borderColor: COLORS.border.subtle }}>
                     <Search size={18} color={COLORS.text.muted} style={{ marginRight: 16 }} />
-                    <TextInput
-                        style={{ flex: 1, fontSize: 15, color: COLORS.text.primary, height: '100%', fontWeight: '700' }}
-                        placeholderTextColor={COLORS.text.muted}
-                        placeholder="Search Identity or House"
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                    />
+                        <TextInput
+                            style={{ flex: 1, fontSize: 15, color: COLORS.text.primary, height: '100%', fontWeight: '700' }}
+                            placeholderTextColor={COLORS.text.muted}
+                            placeholder="Search visitor or house"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                        />
                 </View>
 
 
@@ -227,9 +227,9 @@ export default function LogsScreen() {
                         <View style={{ width: 80, height: 80, borderRadius: 8, backgroundColor: COLORS.background.card, alignItems: 'center', justifyContent: 'center', marginBottom: 24, borderWidth: 1, borderColor: COLORS.border.tactile }}>
                             <FileText size={36} color={COLORS.border.tactile} />
                         </View>
-                        <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, letterSpacing: -1 }}>NO DATA COLLECTED</Text>
+                        <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, letterSpacing: -1 }}>NO LOGS FOUND</Text>
                         <Text style={{ fontSize: 13, color: COLORS.text.muted, textAlign: 'center', paddingHorizontal: 48, textTransform: 'uppercase', fontWeight: '700', letterSpacing: 1 }}>
-                            {searchQuery ? 'Filter calibration required.' : 'Secure ledger standby.'}
+                            {searchQuery ? 'Try adjusting your search or filters.' : 'Your activity log is currently empty.'}
                         </Text>
                     </View>
                 ) : (
@@ -302,7 +302,7 @@ export default function LogsScreen() {
                     <View style={{ padding: 24, flex: 1 }}>
                         <View style={{ width: 48, height: 6, backgroundColor: COLORS.border.subtle, borderRadius: 3, alignSelf: 'center', marginBottom: 28 }} />
                         
-                        <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24 }}>Event Intelligence</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24 }}>Pass Details</Text>
                         
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 32 }}>
                             <View style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>

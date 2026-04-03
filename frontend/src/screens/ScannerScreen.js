@@ -157,7 +157,7 @@ export default function ScannerScreen({ navigation }) {
                             <View style={styles.topBar}>
                                 <Text style={{ fontSize: 34, fontWeight: '800', color: '#ffffff', letterSpacing: -1.5 }}>GATE0</Text>
                                 <View style={{ backgroundColor: COLORS.background.cardHigh, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border.tactile }}>
-                                    <Text selectable={true} style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 2 }}>SECURITY UNIT</Text>
+                                    <Text selectable={true} style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 2 }}>SCANNER UNIT</Text>
                                 </View>
                             </View>
                         </SafeAreaView>
@@ -178,8 +178,8 @@ export default function ScannerScreen({ navigation }) {
                             </View>
 
                             <View style={{ alignItems: 'center', marginTop: 40 }}>
-                                <Text style={{ fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2.5, color: '#ffffff', marginBottom: 8 }}>Polar Intelligence Scan</Text>
-                                <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center', paddingHorizontal: 40 }}>Align the security token within the kinetic field for verification.</Text>
+                                <Text style={{ fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2.5, color: '#ffffff', marginBottom: 8 }}>Ready to Scan</Text>
+                                <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', textAlign: 'center', paddingHorizontal: 40 }}>Align the pass QR code within the frame for verification.</Text>
                             </View>
                         </View>
 
@@ -230,7 +230,7 @@ export default function ScannerScreen({ navigation }) {
                 keyboardBehavior="fillParent"
             >
                 <View style={{ padding: 32, flex: 1 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24, textAlign: 'center' }}>Manual Identity Verification</Text>
+                    <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24, textAlign: 'center' }}>Manual Pass Verification</Text>
                     
                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 8, height: 64, paddingHorizontal: 20, borderWidth: 1, borderColor: COLORS.border.subtle, marginBottom: 32 }}>
                         <Keyboard size={20} color={COLORS.text.muted} style={{ marginRight: 16 }} />
@@ -244,7 +244,7 @@ export default function ScannerScreen({ navigation }) {
                         />
                     </View>
 
-                    <ButtonColorful title="VERIFY SECTOR TOKEN" onPress={handleManualSubmit} width="100%" height={64} style={{ borderRadius: 8 }} />
+                    <ButtonColorful title="VERIFY PASS" onPress={handleManualSubmit} width="100%" height={64} style={{ borderRadius: 8 }} />
                 </View>
             </BottomSheet>
 

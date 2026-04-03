@@ -1,19 +1,42 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, Platform, StyleSheet, Dimensions } from 'react-native';
+import { 
+    View, 
+    Text, 
+    TouchableOpacity, 
+    Platform, 
+    StyleSheet, 
+    Dimensions, 
+    ScrollView, 
+    StatusBar,
+    Image,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Home, Shield, User, ChevronRight } from 'lucide-react-native';
+import { 
+    Home, 
+    Shield, 
+    User, 
+    ChevronRight 
+} from 'lucide-react-native';
 import Animated, { 
     useSharedValue, 
     useAnimatedStyle, 
+    useAnimatedProps,
     withTiming, 
     withDelay,
+    withRepeat,
+    withSequence,
     Easing,
+    interpolate,
+    interpolateColor,
+    Extrapolation
 } from 'react-native-reanimated';
-import Svg, { Rect, Ellipse, Circle } from 'react-native-svg';
+import Svg, { Rect, G, Defs, LinearGradient, Stop, Ellipse, Circle } from 'react-native-svg';
 
 import { COLORS } from '../constants/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const ROLE_DATA = [
     { id: 'resident', label: 'Resident', icon: Home, description: 'Manage your household access' },
@@ -21,62 +44,100 @@ const ROLE_DATA = [
     { id: 'guard', label: 'Security', icon: Shield, description: 'Monitor and scan tokens' },
 ];
 
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
+const AnimatedView = Animated.createAnimatedComponent(View);
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
-function Skyscraper({ x, y, width, height, color, delay, duration }) {
-    const scaleY = useSharedValue(0);
+// --- Background Components ---
 
-    useEffect(() => {
-        scaleY.value = withDelay(delay, withTiming(1, { 
-            duration, 
-            easing: Easing.bezier(0.2, 0, 0.2, 1) 
-        }));
-    }, []);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [
-            { translateY: height * (1 - scaleY.value) },
-            { scaleY: scaleY.value }
-        ],
-    }));
-
+function BackgroundRender({ progress }) {
+    // Holographic Reconstruction Reveal
+    // We simulate 4 'slices' of the image 'compiling' on screen
+    const slices = [0, 1, 2, 3];
+    
     return (
-        <AnimatedRect 
-            x={x} y={y} 
-            width={width} height={height} 
-            fill={color} 
-            style={animatedStyle}
-        />
+        <View style={styles.backgroundWrapper}>
+            <View style={styles.backgroundContainer}>
+                {slices.map((i) => {
+                    const startP = i * 0.15;
+                    const endP = startP + 0.3;
+                    
+                    const sliceStyle = useAnimatedStyle(() => {
+                        const opacity = interpolate(progress.value, [startP, endP], [0, 1], Extrapolation.CLAMP);
+                        const translateX = interpolate(progress.value, [startP, endP], [i % 2 === 0 ? -15 : 15, 0], Extrapolation.CLAMP);
+                        
+                        return {
+                            opacity,
+                            transform: [{ translateX }]
+                        };
+                    });
+
+                    return (
+                        <Animated.View 
+                            key={i} 
+                            style={[
+                                styles.sliceWrapper, 
+                                { height: SCREEN_HEIGHT / 4, top: (SCREEN_HEIGHT / 4) * i },
+                                sliceStyle
+                            ]}
+                        >
+                            <Image 
+                                source={require('../../assets/branding/manhattan_new.jpg')}
+                                style={[
+                                    styles.sliceImage,
+                                    { top: -(SCREEN_HEIGHT / 4) * i }
+                                ]}
+                                resizeMode="cover"
+                            />
+                        </Animated.View>
+                    );
+                })}
+            </View>
+
+            {/* High-Speed Scanline (Holographic Effect) */}
+            <Animated.View 
+                style={[
+                    styles.scanline,
+                    useAnimatedStyle(() => ({
+                        top: interpolate(progress.value, [0.4, 0.9], [-100, SCREEN_HEIGHT + 100], Extrapolation.CLAMP),
+                        opacity: interpolate(progress.value, [0.4, 0.5, 0.8, 0.9], [0, 0.4, 0.4, 0], Extrapolation.CLAMP)
+                    }))
+                ]}
+            />
+            
+            <View style={styles.overlay} />
+        </View>
     );
 }
 
-function RoleCard({ label, description, icon: Icon, onPress, index }) {
-    const opacity = useSharedValue(0);
-    const translateY = useSharedValue(20);
+// --- Interaction Components ---
 
-    useEffect(() => {
-        // Appears after the brand and building (around 3.5s)
-        opacity.value = withDelay(3500 + index * 300, withTiming(1, { duration: 600 }));
-        translateY.value = withDelay(3500 + index * 300, withTiming(0, { duration: 600 }));
-    }, []);
+function RoleCard({ label, description, icon: Icon, onPress, index, progress }) {
+    // 0.9 - 1.0: Role select appearing (4.5s-5s)
+    const cardProgress = 0.9 + (index * 0.03); // Stagger cards
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-        transform: [{ translateY: translateY.value }],
-    }));
+    const animatedStyle = useAnimatedStyle(() => {
+        const opacity = interpolate(progress.value, [cardProgress, cardProgress + 0.05], [0, 1], Extrapolation.CLAMP);
+        const translateY = interpolate(progress.value, [cardProgress, cardProgress + 0.05], [30, 0], Extrapolation.CLAMP);
+        const borderOpacity = interpolate(progress.value, [cardProgress, cardProgress + 0.05], [0, 1], Extrapolation.CLAMP);
+
+        return {
+            opacity,
+            transform: [{ translateY }],
+            borderColor: `rgba(37, 40, 48, ${borderOpacity})` // COLORS.border.tactile
+        };
+    });
 
     return (
         <AnimatedTouchableOpacity
             onPress={onPress}
             activeOpacity={0.8}
-            style={[styles.roleBtn, animatedStyle]}
+            style={[styles.roleCard, animatedStyle]}
         >
-            <View style={styles.roleBtnIcon}>
+            <View style={styles.roleIconBox}>
                 <Icon size={18} color={COLORS.accent.primary} strokeWidth={1.5} />
             </View>
-            <View style={{ flex: 1, alignItems: 'center' }}>
-                <Text style={styles.roleTitle}>{label}</Text>
+            <View style={styles.roleTextGroup}>
+                <Text style={styles.roleLabel}>{label}</Text>
                 <Text style={styles.roleDesc}>{description}</Text>
             </View>
             <ChevronRight size={16} color={COLORS.text.muted} />
@@ -85,97 +146,71 @@ function RoleCard({ label, description, icon: Icon, onPress, index }) {
 }
 
 export default function RoleSelectScreen({ navigation }) {
-    const pillOpacity = useSharedValue(0);
-    const brandOpacity = useSharedValue(0);
-    const subOpacity = useSharedValue(0);
+    const masterProgress = useSharedValue(0);
 
     useEffect(() => {
-        // Timeline for 5-second majestic load
-        // Building blocks (0s - 2.5s)
-        // Pill appears (2.5s)
-        pillOpacity.value = withDelay(2500, withTiming(1, { duration: 500 }));
-        // Brand appears (3.0s)
-        brandOpacity.value = withDelay(3000, withTiming(1, { duration: 800 }));
-        // Subtitle appears (3.5s)
-        subOpacity.value = withDelay(3500, withTiming(1, { duration: 800 }));
+        StatusBar.setBarStyle('light-content');
+
+        // Linear 5 second animation (0 to 1)
+        masterProgress.value = withTiming(1, { 
+            duration: 5000, 
+            easing: Easing.bezier(0.4, 0, 0.2, 1) 
+        });
     }, []);
 
-    const pillStyle = useAnimatedStyle(() => ({
-        opacity: pillOpacity.value,
-        transform: [{ translateY: (1 - pillOpacity.value) * 10 }],
-    }));
 
     const brandStyle = useAnimatedStyle(() => ({
-        opacity: brandOpacity.value,
-        transform: [{ scale: 0.95 + brandOpacity.value * 0.05 }],
+        opacity: interpolate(masterProgress.value, [0.8, 0.88], [0, 1], Extrapolation.CLAMP),
+        transform: [{ translateY: interpolate(masterProgress.value, [0.8, 0.88], [20, 0], Extrapolation.CLAMP) }],
+        letterSpacing: interpolate(masterProgress.value, [0.8, 0.95], [10, 18], Extrapolation.CLAMP),
     }));
 
-    const subStyle = useAnimatedStyle(() => ({
-        opacity: subOpacity.value,
-    }));
+    const subStyle = useAnimatedStyle(() => {
+        const opacity = interpolate(masterProgress.value, [0.85, 0.92], [0, 1], Extrapolation.CLAMP);
+        const color = interpolateColor(masterProgress.value, [0.85, 0.95], ['rgba(255,255,255,0.4)', '#c8963c']);
+        
+        return {
+            opacity,
+            color
+        };
+    });
 
     return (
         <View style={styles.container}>
-            {/* Background Majestic Building Montage */}
-            <View style={StyleSheet.absoluteFill}>
-                <Svg width="100%" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
-                    <Rect width="400" height="800" fill="#070809" />
-                    
-                    {/* Skyscrapers rising sequence */}
-                    <Skyscraper x="100" y="200" width="200" height="600" color="#0d1018" delay={100} duration={2000} />
-                    <Skyscraper x="130" y="160" width="140" height="640" color="#0f1216" delay={400} duration={1800} />
-                    <Skyscraper x="160" y="120" width="80" height="680" color="#111520" delay={700} duration={1600} />
-                    <Skyscraper x="180" y="80" width="40" height="720" color="#131820" delay={1000} duration={1400} />
+            <BackgroundRender progress={masterProgress} />
+            
+            <View style={styles.mainWrapper}>
+                <SafeAreaView style={styles.heroSection}>
+                    <View style={styles.heroInner}>
+                        <Animated.Text style={[styles.wordmark, brandStyle]}>
+                            GATE0
+                        </Animated.Text>
 
-                    {/* Architectural Detail Grids */}
-                    {[140, 160, 180, 200, 220, 240, 260].map(x => (
-                        <Rect key={x} x={x} y="0" width="1" height="800" fill="#0a0c10" opacity={0.3} />
-                    ))}
-                    {[100, 200, 300, 400, 500, 600, 700].map(y => (
-                        <Rect key={y} x="0" y={y} width="400" height="1" fill="#0a0c10" opacity={0.3} />
-                    ))}
+                        <Animated.View style={styles.subtitleContainer}>
+                            <Animated.Text style={[styles.subtitle, subStyle]}>
+                                Intelligent residential access
+                            </Animated.Text>
+                        </Animated.View>
 
-                    <Ellipse cx="200" cy="780" rx="150" ry="40" fill={COLORS.accent.primary} opacity={0.06} />
-                    
-                    {/* Tech particles */}
-                    <Circle cx="50" cy="150" r="1.2" fill={COLORS.accent.primary} opacity={0.3} />
-                    <Circle cx="350" cy="280" r="1" fill={COLORS.accent.primary} opacity={0.2} />
-                    <Circle cx="120" cy="500" r="0.8" fill="#e8d0a0" opacity={0.15} />
-                </Svg>
+                        <View style={styles.rolesGrid}>
+                            {ROLE_DATA.map((role, i) => (
+                                <RoleCard 
+                                    key={role.id}
+                                    index={i}
+                                    progress={masterProgress}
+                                    {...role}
+                                    onPress={() => navigation.navigate('Login', { role: role.id })}
+                                />
+                            ))}
+                        </View>
+                    </View>
+                </SafeAreaView>
+
+                <View style={styles.footer}>
+                    <Text style={styles.footerBrand}>GATE0</Text>
+                    <View style={styles.footerLine} />
+                </View>
             </View>
-
-            {/* Dark Overlay for content clarity */}
-            <View style={styles.overlay} />
-
-            <SafeAreaView style={styles.content}>
-                <View style={styles.centeredGroup}>
-                    <Animated.View style={[styles.statusPill, pillStyle]}>
-                        <View style={styles.statusDot} />
-                        <Text style={styles.statusText}>SYSTEM ONLINE</Text>
-                    </Animated.View>
-
-                    <Animated.Text style={[styles.brandName, brandStyle]}>
-                        GATE0
-                    </Animated.Text>
-
-                    <Animated.View style={subStyle}>
-                        <Text style={styles.brandSub}>Intelligent residential access</Text>
-                    </Animated.View>
-                </View>
-
-                <View style={styles.rolesContainer}>
-                    {ROLE_DATA.map((role, index) => (
-                        <RoleCard 
-                            key={role.id}
-                            label={role.label}
-                            description={role.description}
-                            icon={role.icon}
-                            index={index}
-                            onPress={() => navigation.navigate('Login', { role: role.id })}
-                        />
-                    ))}
-                </View>
-            </SafeAreaView>
         </View>
     );
 }
@@ -185,105 +220,156 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: COLORS.background.primary,
     },
-    overlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(7, 8, 9, 0.45)',
+    mainWrapper: {
+        flex: 1,
+        width: '100%',
+        maxWidth: 420,
+        alignSelf: 'center',
+        paddingHorizontal: 24,
+        zIndex: 10,
     },
-    content: {
+    backgroundWrapper: {
+        ...StyleSheet.absoluteFillObject,
+        alignItems: 'center',
+        backgroundColor: '#000',
+    },
+    backgroundContainer: {
+        width: '100%',
+        maxWidth: 420,
+        height: SCREEN_HEIGHT,
+        overflow: 'hidden',
+    },
+    sliceWrapper: {
+        position: 'absolute',
+        left: 0,
+        width: '100%',
+        overflow: 'hidden',
+    },
+    sliceImage: {
+        width: 420,
+        height: SCREEN_HEIGHT,
+        position: 'absolute',
+        left: 0,
+    },
+    scanline: {
+        position: 'absolute',
+        width: '100%',
+        maxWidth: 420,
+        height: 2,
+        backgroundColor: '#fff',
+        shadowColor: '#fff',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.8,
+        shadowRadius: 10,
+        zIndex: 5,
+    },
+    overlay: {
+        position: 'absolute',
+        width: '100%',
+        maxWidth: 420,
+        height: '100%',
+        backgroundColor: 'rgba(7, 8, 9, 0.3)',
+    },
+    heroSection: {
         flex: 1,
         justifyContent: 'center',
+        paddingTop: 40,
+    },
+    heroInner: {
         alignItems: 'center',
-        paddingHorizontal: 40,
+        justifyContent: 'center',
+        width: '100%',
     },
-    centeredGroup: {
-        alignItems: 'center',
-        marginBottom: 60,
-    },
-    statusPill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(200, 150, 60, 0.08)',
-        borderWidth: 1,
-        borderColor: 'rgba(200, 150, 60, 0.25)',
-        borderRadius: 100,
-        paddingVertical: 5,
-        paddingHorizontal: 16,
-        marginBottom: 24,
-    },
-    statusDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: COLORS.accent.primary,
-        marginRight: 10,
-    },
-    statusText: {
-        fontSize: 10,
-        letterSpacing: 2,
-        color: COLORS.accent.primary,
-        fontWeight: '700',
-    },
-    brandName: {
-        fontSize: 72,
-        color: COLORS.text.brand,
-        letterSpacing: 18,
+    wordmark: {
+        fontSize: SCREEN_WIDTH > 400 ? 76 : 64,
+        color: COLORS.text.primary,
         textAlign: 'center',
-        marginBottom: 16,
+        marginBottom: 8,
+        textShadowColor: 'rgba(0, 0, 0, 0.9)',
+        textShadowOffset: { width: 0, height: 10 },
+        textShadowRadius: 20,
         ...Platform.select({
-            web: { 
-                fontFamily: 'Cormorant Garamond, serif',
-                fontWeight: '300'
-            },
+            web: { fontFamily: 'Cormorant Garamond, serif', fontWeight: '300' },
             ios: { fontFamily: 'CormorantGaramond-Light', fontWeight: '300' },
-            android: { fontFamily: 'serif', fontWeight: 'normal' }
         })
     },
-    brandSub: {
-        fontSize: 12,
-        letterSpacing: 6,
-        color: COLORS.text.secondary,
+    subtitleContainer: {
+        marginBottom: 32,
+    },
+    subtitle: {
+        fontSize: 11,
+        letterSpacing: 5,
         textTransform: 'uppercase',
         textAlign: 'center',
+        fontWeight: '700',
+        textShadowColor: '#c8963c',
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
         ...Platform.select({
             web: { fontFamily: 'Outfit, sans-serif' },
         })
     },
-    rolesContainer: {
+    rolesGrid: {
         width: '100%',
-        marginTop: 20,
     },
-    roleBtn: {
+    roleCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+        backgroundColor: '#0a0b0d', // Solid opaque black
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.08)',
-        borderRadius: 16,
+        borderColor: 'rgba(200, 150, 60, 0.15)',
         padding: 20,
         marginBottom: 16,
         width: '100%',
+        borderRadius: 4,
     },
-    roleBtnIcon: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: 'rgba(200, 150, 60, 0.08)',
-        borderWidth: 1,
-        borderColor: 'rgba(200, 150, 60, 0.2)',
+    roleIconBox: {
+        width: 44,
+        height: 44,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16,
+        backgroundColor: 'rgba(200, 150, 60, 0.05)',
+        borderRadius: 8,
     },
-    roleTitle: {
+    roleTextGroup: {
+        flex: 1,
+    },
+    roleLabel: {
         fontSize: 15,
         fontWeight: '700',
         color: COLORS.text.primary,
-        marginBottom: 3,
-        textAlign: 'center',
+        marginBottom: 2,
+        ...Platform.select({
+            web: { fontFamily: 'Outfit' },
+        })
     },
     roleDesc: {
-        fontSize: 11,
+        fontSize: 12,
         color: COLORS.text.secondary,
-        textAlign: 'center',
-    }
+        ...Platform.select({
+            web: { fontFamily: 'Outfit' },
+        })
+    },
+    footer: {
+        width: '100%',
+        alignItems: 'center',
+        paddingBottom: 40,
+    },
+    footerBrand: {
+        fontSize: 10,
+        letterSpacing: 8,
+        color: COLORS.text.primary,
+        opacity: 0.9,
+        fontWeight: '300',
+        marginBottom: 12,
+        ...Platform.select({
+            web: { fontFamily: 'Outfit' },
+        })
+    },
+    footerLine: {
+        width: 40,
+        height: 1,
+        backgroundColor: 'rgba(200, 150, 60, 0.4)',
+    },
 });
