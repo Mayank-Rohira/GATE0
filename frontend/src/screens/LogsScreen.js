@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Pressable, FlatList, RefreshControl, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, FileText, User, MapPin, Download } from 'lucide-react-native';
 import { API_BASE } from '../config/api';
