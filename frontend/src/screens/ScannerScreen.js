@@ -54,6 +54,7 @@ export default function ScannerScreen({ navigation }) {
     const [torch, setTorch] = useState(false);
     const [manualCode, setManualCode] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
+    const [scanned, setScanned] = useState(false);
     const [userInitials, setUserInitials] = useState('GR');
     const isFocused = useIsFocused();
     
