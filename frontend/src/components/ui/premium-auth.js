@@ -50,36 +50,35 @@ export function PremiumAuth({
             )}
             
             {role && (
-              <View style={{ backgroundColor: COLORS.status.successBg, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 }}>
-                <Text style={{ color: COLORS.status.success, fontSize: 11, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+              <View style={{ backgroundColor: COLORS.background.cardHigh, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border.tactile }}>
+                <Text style={{ color: COLORS.accent.primary, fontSize: 11, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase' }}>
                   {role}
                 </Text>
               </View>
             )}
           </View>
 
-          <View style={{ alignItems: 'center', marginTop: 80, marginBottom: 10, ...Platform.select({ web: { userSelect: 'text' } }) }}>
-            <Text selectable={true} style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, marginBottom: 8, letterSpacing: -1 }}>{title}</Text>
-            <Text selectable={true} style={{ fontSize: 15, color: COLORS.text.secondary, marginBottom: 32 }}>{subtitle}</Text>
+          <View style={{ alignItems: 'flex-start', marginTop: 100, marginBottom: 10, paddingHorizontal: 4 }}>
+            <Text selectable={true} style={{ fontSize: 38, fontWeight: '800', color: COLORS.text.primary, marginBottom: 8, letterSpacing: -2 }}>{title}</Text>
+            <Text selectable={true} style={{ fontSize: 13, color: COLORS.text.muted, marginBottom: 40, letterSpacing: 0.5, textTransform: 'uppercase', fontWeight: '700' }}>{subtitle}</Text>
           </View>
-
-          <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.05)', marginHorizontal: -24, marginBottom: 32 }} />
 
           <Animated.View style={{ transform: [{ translateX: shakeAnim }], width: '100%' }}>
             {inputs.map((input, index) => (
-              <View key={index} style={{ marginBottom: 20, ...Platform.select({ web: { userSelect: 'text' } }) }}>
-                <Text selectable={true} style={{ fontSize: 11, fontWeight: '600', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8, marginLeft: 4 }}>
+              <View key={index} style={{ marginBottom: 24 }}>
+                <Text selectable={true} style={{ fontSize: 10, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, marginLeft: 4 }}>
                   {input.label}
                 </Text>
                 <TextInput
                   style={{
-                    backgroundColor: COLORS.background.input,
-                    borderRadius: 14,
-                    height: 58,
-                    paddingHorizontal: 18,
+                    backgroundColor: COLORS.background.surface,
+                    borderRadius: 8,
+                    height: 60,
+                    paddingHorizontal: 20,
                     fontSize: 16,
                     color: COLORS.text.primary,
-                    ...Platform.select({ web: { userSelect: 'text' } })
+                    borderWidth: 1,
+                    borderColor: COLORS.border.subtle,
                   }}
                   placeholderTextColor={COLORS.text.muted}
                   {...input.props}
@@ -87,19 +86,20 @@ export function PremiumAuth({
               </View>
             ))}
 
-            {error ? <Text style={{ color: COLORS.status.error, textAlign: 'center', marginBottom: 20, fontWeight: '500' }}>{error}</Text> : null}
+            {error ? <Text style={{ color: COLORS.status.error, textAlign: 'left', marginLeft: 4, marginBottom: 24, fontWeight: '700', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>{error}</Text> : null}
 
-            <View style={{ marginTop: 12 }}>
-              <ButtonColorful title={submitLabel} onPress={onSubmit} loading={loading} style={{ width: '100%' }} />
+            <View style={{ marginTop: 8 }}>
+              <ButtonColorful title={submitLabel} onPress={onSubmit} loading={loading} style={{ width: '100%', height: 60, borderRadius: 8 }} />
             </View>
           </Animated.View>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 40, marginBottom: 20, ...Platform.select({ web: { userSelect: 'text' } }) }}>
-            <Text selectable={true} style={{ color: COLORS.text.secondary }}>{footerText} </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 40, marginBottom: 40 }}>
+            <Text selectable={true} style={{ color: COLORS.text.muted, fontSize: 13 }}>{footerText} </Text>
             <TouchableOpacity onPress={onFooterAction}>
-              <Text style={{ color: COLORS.accent.primary, fontWeight: '700' }}>{footerActionText}</Text>
+              <Text style={{ color: COLORS.accent.primary, fontWeight: '800', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>{footerActionText}</Text>
             </TouchableOpacity>
           </View>
+
 
           <View style={{ position: 'absolute', bottom: 20, left: 0, right: 0, alignItems: 'center' }}>
             <Text style={{ fontSize: 10, color: COLORS.text.muted, letterSpacing: 3, fontWeight: '600' }}>GATE0 · SECURE ACCESS</Text>

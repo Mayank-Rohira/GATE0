@@ -46,21 +46,22 @@ export function ButtonColorful({ title, icon: Icon, onPress, loading, style, tex
       ]}
       {...props}
     >
-      <LinearGradient
-        colors={[COLORS.accent.primary, COLORS.accent.primaryDeep]}
+    <LinearGradient
+        colors={['#252626', '#191a1a']} // Tonal Monolith Gradient
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 }}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, borderWidth: 1, borderColor: '#484848' }}
       >
         {loading ? (
-          <ActivityIndicator color={COLORS.background.primary} />
+          <ActivityIndicator color={COLORS.text.primary} />
         ) : (
           <>
-            {Icon && <Icon size={20} color={COLORS.background.primary} style={{ marginRight: title ? 10 : 0 }} />}
-            {title && <Text style={[{ color: COLORS.background.primary, fontSize: 16, fontWeight: '800', letterSpacing: 0.5 }, textStyle]}>{title}</Text>}
+            {Icon && <Icon size={20} color={COLORS.text.primary} style={{ marginRight: title ? 10 : 0 }} />}
+            {title && <Text style={[{ color: COLORS.text.primary, fontSize: 15, fontWeight: '800', letterSpacing: 1.5, textTransform: 'uppercase' }, textStyle]}>{title}</Text>}
           </>
         )}
       </LinearGradient>
+
     </AnimatedPressable>
   );
 }

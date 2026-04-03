@@ -133,7 +133,7 @@ export default function ScannerScreen({ navigation }) {
                 <ShieldAlert size={48} color={COLORS.text.muted} style={{ marginBottom: 24 }} />
                 <Text style={{ fontSize: 18, fontWeight: '600', color: COLORS.text.primary, marginBottom: 8, fontFamily: 'Montserrat' }}>Camera Access Required</Text>
                 <Text style={{ color: COLORS.text.secondary, textAlign: 'center', marginBottom: 32, fontFamily: 'Montserrat' }}>
-                    GateZero Security needs permission to use your camera for scanning digital passes.
+                    GATE0 Security needs permission to use your camera for scanning digital passes.
                 </Text>
                 <ButtonColorful title="Allow Camera Access" onPress={requestPermission} width="100%" />
             </SafeAreaView>
@@ -156,11 +156,12 @@ export default function ScannerScreen({ navigation }) {
                         <SafeAreaView edges={['top']} style={styles.topBarContainer}>
                             <View style={styles.topBar}>
                                 <Text style={{ fontSize: 34, fontWeight: '800', color: '#ffffff', letterSpacing: -1.5 }}>GATE0</Text>
-                                <View style={{ backgroundColor: COLORS.accent.primaryGlow, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
-                                    <Text selectable={true} style={{ fontSize: 10, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 2 }}>Scanner</Text>
+                                <View style={{ backgroundColor: COLORS.background.cardHigh, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border.tactile }}>
+                                    <Text selectable={true} style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 2 }}>SECURITY UNIT</Text>
                                 </View>
                             </View>
                         </SafeAreaView>
+
 
                         {/* Scanner Area */}
                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -228,24 +229,25 @@ export default function ScannerScreen({ navigation }) {
                 handleIndicatorStyle={{ backgroundColor: COLORS.border.subtle }}
                 keyboardBehavior="fillParent"
             >
-                <View style={{ padding: 24, flex: 1 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1.5, color: COLORS.text.muted, marginBottom: 20 }}>Manual Entry</Text>
+                <View style={{ padding: 32, flex: 1 }}>
+                    <Text style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, color: COLORS.text.muted, marginBottom: 24, textAlign: 'center' }}>Manual Identity Verification</Text>
                     
-                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.input, borderRadius: 14, height: 56, paddingHorizontal: 16, borderWidth: 1, borderColor: COLORS.border.subtle, marginBottom: 24 }}>
-                        <Keyboard size={18} color={COLORS.text.muted} style={{ marginRight: 12 }} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 8, height: 64, paddingHorizontal: 20, borderWidth: 1, borderColor: COLORS.border.subtle, marginBottom: 32 }}>
+                        <Keyboard size={20} color={COLORS.text.muted} style={{ marginRight: 16 }} />
                         <BottomSheetTextInput
-                            style={{ flex: 1, fontSize: 16, fontFamily: 'Courier', color: COLORS.text.primary, height: '100%' }}
+                            style={{ flex: 1, fontSize: 18, color: COLORS.text.primary, height: '100%', fontWeight: '700', letterSpacing: 2.5 }}
                             placeholderTextColor={COLORS.text.muted}
-                            placeholder="PASS_------"
+                            placeholder="PASS_CODE"
                             value={manualCode}
                             onChangeText={setManualCode}
                             autoCapitalize="characters"
                         />
                     </View>
 
-                    <ButtonColorful title="Verify Code" onPress={handleManualSubmit} width="100%" height={56} />
+                    <ButtonColorful title="VERIFY SECTOR TOKEN" onPress={handleManualSubmit} width="100%" height={64} style={{ borderRadius: 8 }} />
                 </View>
             </BottomSheet>
+
         </View>
     );
 }

@@ -163,30 +163,31 @@ export default function LogsScreen() {
                 {/* Header */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                     <View>
-                        <Text style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>LOGS</Text>
-                        <View style={{ backgroundColor: COLORS.status.successBg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, marginTop: 4, alignSelf: 'flex-start' }}>
-                            <Text selectable={true} style={{ color: COLORS.status.success, fontSize: 10, fontWeight: '800', letterSpacing: 2, textTransform: 'uppercase' }}>Security Intel</Text>
+                        <Text style={{ fontSize: 38, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -2 }}>LOGS</Text>
+                        <View style={{ backgroundColor: COLORS.background.cardHigh, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 8, marginTop: 12, alignSelf: 'flex-start', borderWidth: 1, borderColor: COLORS.border.tactile }}>
+                            <Text selectable={true} style={{ color: COLORS.accent.primary, fontSize: 11, fontWeight: '800', letterSpacing: 2.5, textTransform: 'uppercase' }}>Security Intel</Text>
                         </View>
                     </View>
                     <TouchableOpacity 
                         onPress={exportToCSV}
-                        style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center' }}
+                        style={{ width: 56, height: 56, borderRadius: 8, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: COLORS.border.subtle }}
                     >
-                        <Download size={20} color={COLORS.accent.primary} />
+                        <Download size={22} color={COLORS.accent.primary} />
                     </TouchableOpacity>
                 </View>
 
                 {/* Search Bar */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 16, height: 52, paddingHorizontal: 16, marginBottom: 20 }}>
-                    <Search size={20} color={COLORS.text.muted} style={{ marginRight: 12 }} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, borderRadius: 8, height: 56, paddingHorizontal: 18, marginBottom: 24, borderWidth: 1, borderColor: COLORS.border.subtle }}>
+                    <Search size={18} color={COLORS.text.muted} style={{ marginRight: 16 }} />
                     <TextInput
-                        style={{ flex: 1, fontSize: 15, color: COLORS.text.primary, height: '100%', fontWeight: '600' }}
+                        style={{ flex: 1, fontSize: 15, color: COLORS.text.primary, height: '100%', fontWeight: '700' }}
                         placeholderTextColor={COLORS.text.muted}
-                        placeholder="Filter by Name, House, or Service"
+                        placeholder="Search Identity or House"
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
                 </View>
+
 
                 {/* Filter Tabs */}
                 <View style={{ marginBottom: 32 }}>
@@ -223,12 +224,12 @@ export default function LogsScreen() {
                 {/* Logs List */}
                 {filteredLogs.length === 0 ? (
                     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: -40 }}>
-                        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 20, borderWidth: 1, borderColor: COLORS.border.subtle }}>
-                            <FileText size={36} color={COLORS.border.subtle} />
+                        <View style={{ width: 80, height: 80, borderRadius: 8, backgroundColor: COLORS.background.card, alignItems: 'center', justifyContent: 'center', marginBottom: 24, borderWidth: 1, borderColor: COLORS.border.tactile }}>
+                            <FileText size={36} color={COLORS.border.tactile} />
                         </View>
-                        <Text style={{ fontSize: 17, fontWeight: '600', color: COLORS.text.primary, marginBottom: 8, fontFamily: 'Montserrat' }}>No Logs Found</Text>
-                        <Text style={{ fontSize: 15, color: COLORS.text.secondary, textAlign: 'center', paddingHorizontal: 32, fontFamily: 'Montserrat' }}>
-                            {searchQuery ? 'Try adjusting your search filters.' : 'Entry records will appear here.'}
+                        <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, letterSpacing: -1 }}>NO DATA COLLECTED</Text>
+                        <Text style={{ fontSize: 13, color: COLORS.text.muted, textAlign: 'center', paddingHorizontal: 48, textTransform: 'uppercase', fontWeight: '700', letterSpacing: 1 }}>
+                            {searchQuery ? 'Filter calibration required.' : 'Secure ledger standby.'}
                         </Text>
                     </View>
                 ) : (
@@ -241,38 +242,40 @@ export default function LogsScreen() {
                                 style={({ pressed }) => [
                                     { 
                                         backgroundColor: COLORS.background.card, 
-                                        borderRadius: 24, 
-                                        padding: 20, 
+                                        borderRadius: 12, 
+                                        padding: 24, 
                                         marginBottom: 16, 
-                                        ...Platform.select({ ios: { shadowColor: COLORS.accent.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10 }, android: { elevation: 2 } })
+                                        borderWidth: 1,
+                                        borderColor: COLORS.border.subtle,
+                                        ...Platform.select({ ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 }, android: { elevation: 2 } })
                                     },
                                     pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
                                 ]}
                             >
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                                        <View style={{ width: 44, height: 44, borderRadius: 8, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16, borderWidth: 1, borderColor: COLORS.border.subtle }}>
                                             <Text style={{ fontSize: 15, fontWeight: '800', color: COLORS.text.primary }}>{getInitials(item.visitor_name)}</Text>
                                         </View>
                                         <View>
-                                            <Text style={{ fontSize: 16, fontWeight: '800', color: COLORS.text.primary }}>{item.visitor_name}</Text>
-                                            <Text style={{ fontSize: 11, color: getStatusColor(item), fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 }}>{getLogActionText(item)}</Text>
+                                            <Text style={{ fontSize: 17, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -0.2 }}>{item.visitor_name}</Text>
+                                            <Text style={{ fontSize: 11, color: getStatusColor(item), fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.5 }}>{getLogActionText(item)}</Text>
                                         </View>
                                     </View>
                                     <View style={{ alignItems: 'flex-end' }}>
-                                        <Text style={{ fontSize: 12, fontWeight: '700', color: COLORS.text.primary }}>{item.time}</Text>
-                                        <Text style={{ fontSize: 10, color: COLORS.text.muted, fontWeight: '700' }}>{item.date}</Text>
+                                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.primary, letterSpacing: 0.5 }}>{item.time}</Text>
+                                        <Text style={{ fontSize: 10, color: COLORS.text.muted, fontWeight: '800', textTransform: 'uppercase' }}>{item.date}</Text>
                                     </View>
                                 </View>
 
                                 <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
-                                        <User size={12} color={COLORS.text.muted} style={{ marginRight: 6 }} />
-                                        <Text style={{ fontSize: 12, color: COLORS.text.secondary, fontWeight: '600' }}>Auth: {item.resident_name || 'Resident'}</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: COLORS.border.subtle }}>
+                                        <User size={12} color={COLORS.text.muted} style={{ marginRight: 8 }} />
+                                        <Text style={{ fontSize: 11, color: COLORS.text.secondary, fontWeight: '800', textTransform: 'uppercase' }}>AUTH: {item.resident_name || 'Resident'}</Text>
                                     </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
-                                        <MapPin size={12} color={COLORS.text.muted} style={{ marginRight: 6 }} />
-                                        <Text style={{ fontSize: 12, color: COLORS.text.secondary, fontWeight: '600' }}>{item.house_number}</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.background.surface, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: COLORS.border.subtle }}>
+                                        <MapPin size={12} color={COLORS.text.muted} style={{ marginRight: 8 }} />
+                                        <Text style={{ fontSize: 11, color: COLORS.text.secondary, fontWeight: '800', textTransform: 'uppercase' }}>{item.house_number}</Text>
                                     </View>
                                 </View>
                             </Pressable>
@@ -282,6 +285,7 @@ export default function LogsScreen() {
                         contentContainerStyle={{ paddingBottom: 40 }}
                     />
                 )}
+
             </View>
 
             {/* Log Detail Bottom Sheet */}

@@ -38,14 +38,17 @@ export default function PassCard({ pass, variant = 'resident', onPress }) {
             activeOpacity={0.9}
             style={[
                 {
-                    backgroundColor: COLORS.background.card, // surface-container-lowest (#ffffff)
-                    borderRadius: 24, // md radius
+                    backgroundColor: COLORS.background.card,
+                    borderRadius: 12,
                     marginBottom: 16,
                     padding: 20,
-                    // Ambient Glow
+                    borderWidth: 1,
+                    borderColor: COLORS.border.subtle,
+                    // Tactile surfacing
                     ...Platform.select({
-                        ios: { shadowColor: '#292e3d', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.06, shadowRadius: 32 },
-                        android: { elevation: 2 },
+                        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 },
+                        android: { elevation: 3 },
+                        web: { boxShadow: '0 4px 12px rgba(0,0,0,0.5)', userSelect: 'text' }
                     }),
                     ...(variant === 'visitor' && pass.status === 'approved' ? { opacity: 0.8 } : {})
                 },
@@ -53,8 +56,8 @@ export default function PassCard({ pass, variant = 'resident', onPress }) {
             ]}
         >
             {/* Top Row */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, ...Platform.select({ web: { userSelect: 'text' } }) }}>
-                <Text selectable={true} style={{ fontSize: 18, fontWeight: '800', color: COLORS.text.primary, flex: 1, marginRight: 8, letterSpacing: -0.5 }} numberOfLines={1}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Text selectable={true} style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1.5 }}>
                     {pass.service_name}
                 </Text>
                 <StatusBadge status={pass.status} />
@@ -62,22 +65,22 @@ export default function PassCard({ pass, variant = 'resident', onPress }) {
 
             {/* Second Row */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-                <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                    <User size={16} color={COLORS.accent.primary} />
+                <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center', marginRight: 16, borderWidth: 1, borderColor: COLORS.border.subtle }}>
+                    <User size={18} color={COLORS.accent.primary} />
                 </View>
-                <View style={{ ...Platform.select({ web: { userSelect: 'text' } }) }}>
-                    <Text selectable={true} style={{ fontSize: 15, fontWeight: '700', color: COLORS.text.primary }}>
-                        {variant === 'resident' ? pass.visitor_name : `Auth by: ${pass.resident_name || 'Resident'}`}
+                <View style={{ flex: 1 }}>
+                    <Text selectable={true} style={{ fontSize: 17, fontWeight: '700', color: COLORS.text.primary, letterSpacing: -0.2 }}>
+                        {variant === 'resident' ? pass.visitor_name : `${pass.resident_name || 'Resident'}`}
                     </Text>
                     {variant === 'resident' && pass.visitor_mobile && (
-                        <Text selectable={true} style={{ fontSize: 13, color: COLORS.text.secondary, marginTop: 2 }}>
+                        <Text selectable={true} style={{ fontSize: 13, color: COLORS.text.muted, marginTop: 2, letterSpacing: 0.5 }}>
                             {pass.visitor_mobile}
                         </Text>
                     )}
                 </View>
             </View>
 
-            {/* Third Row: Tonal separation instead of border */}
+            {/* Third Row: Tactile Floor */}
             <View style={{ 
                 flexDirection: 'row', 
                 justifyContent: 'space-between', 
@@ -85,26 +88,22 @@ export default function PassCard({ pass, variant = 'resident', onPress }) {
                 backgroundColor: COLORS.background.surface,
                 marginHorizontal: -20,
                 marginBottom: -20,
+                marginTop: 4,
                 padding: 16,
-                borderBottomLeftRadius: 24,
-                borderBottomRightRadius: 24
+                borderBottomLeftRadius: 10,
+                borderBottomRightRadius: 10,
+                borderTopWidth: 1,
+                borderTopColor: COLORS.border.subtle
             }}>
-                <View style={{
-                    backgroundColor: COLORS.background.card,
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    ...Platform.select({ web: { userSelect: 'text' } })
-                }}>
-                    <Text selectable={true} style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.5, color: COLORS.accent.tertiary }} numberOfLines={1}>
-                        {variant === 'visitor' ? `${pass.house_number}, ${pass.society_name}` : pass.house_number}
-                    </Text>
-                </View>
+                <Text selectable={true} style={{ fontSize: 11, fontWeight: '800', color: COLORS.accent.primary, textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                    LOC: {variant === 'visitor' ? `${pass.house_number}` : pass.house_number}
+                </Text>
 
-                <Text selectable={true} style={{ fontSize: 12, fontWeight: '600', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
+                <Text selectable={true} style={{ fontSize: 11, fontWeight: '600', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
                     {formatDate(pass.created_at)}
                 </Text>
             </View>
         </AnimatedTouchableOpacity>
+
     );
 }

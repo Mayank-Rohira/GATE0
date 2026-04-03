@@ -1,34 +1,40 @@
 export const COLORS = {
   background: {
-    primary: '#04040a', // Deep Neutral
-    surface: '#0c0c14', // Section Dark
-    card: '#11111a',    // Elevated Element
-    cardHover: '#1a1a24',
-    input: '#1a1a24',
+    primary: '#0a0b0d', // Pure Obsidian
+    surface: '#111215', // Tactical Surface
+    card: '#16181b',    // Module Base
+    cardHigh: '#1c1e22', // Raised Module
+    etched: '#070809', // Carved background
+    input: '#0e1014',
   },
   border: {
-    subtle: 'rgba(255, 255, 255, 0.05)',
-    active: '#00f576',
+    subtle: '#1c1e24',
+    tactile: '#252830', // Architectural edge
+    active: '#c8963c', // Prime Gold Accent
+    dim: '#3a3830',
   },
   accent: {
-    primary: '#00f576', // Kinetic Green (Vibrant)
-    primaryDeep: '#00cc62',
-    primaryGlow: 'rgba(0, 245, 118, 0.15)',
-    secondary: '#3fff8b',
-    tertiary: '#00f576', 
+    primary: '#c8963c', // Gold
+    primaryDeep: '#a67c32',
+    primaryGlow: 'rgba(200, 150, 60, 0.12)',
+    secondary: '#e8e2d9',
+    tertiary: '#f5ede0', // High-end Cream
   },
   status: {
-    success: '#00f576',
-    successBg: 'rgba(0, 245, 118, 0.1)',
-    warning: '#ffa500',
-    warningBg: 'rgba(255, 165, 0, 0.1)',
-    error: '#ff2d55',
-    errorBg: 'rgba(255, 45, 85, 0.1)',
+    success: '#3a9060',
+    successBg: 'rgba(60, 160, 100, 0.08)',
+    warning: '#c8963c',
+    warningBg: 'rgba(200, 150, 60, 0.08)',
+    error: '#ee7d77', 
+    errorBg: '#7f2927',
   },
   text: {
-    primary: '#ffffff',
-    secondary: '#a1a3b1',
-    muted: '#63667c',
-    onPrimary: '#04040a',
+    primary: '#e8e2d9', // Soft Oyster White
+    secondary: '#5a5248', // Muted Gold-Gray
+    muted: '#3a3530', // Deep Shadow Text
+    onPrimary: '#0a0b0d',
+    brand: '#f5ede0', // Hero Text Gold-White
   },
 };
+
+

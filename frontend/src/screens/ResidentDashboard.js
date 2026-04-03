@@ -35,25 +35,28 @@ function StatCard({ label, count, color, isActive, onPress }) {
             onPressOut={handlePressOut}
             style={[
                 {
-                    width: 120,
-                    backgroundColor: isActive ? color : COLORS.background.card,
-                    borderRadius: 24,
-                    padding: 16,
-                    marginRight: 12,
+                    width: 140,
+                    backgroundColor: isActive ? COLORS.background.cardHigh : COLORS.background.card,
+                    borderRadius: 12,
+                    padding: 20,
+                    marginRight: 16,
+                    borderWidth: 1,
+                    borderColor: isActive ? COLORS.border.tactile : COLORS.border.subtle,
                     ...Platform.select({
-                        ios: { shadowColor: color, shadowOffset: { width: 0, height: 12 }, shadowOpacity: isActive ? 0.4 : 0.1, shadowRadius: isActive ? 24 : 32 },
+                        ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 4 },
                         android: { elevation: 2 },
-                        web: { boxShadow: isActive ? `0 12px 24px ${color}40` : '0 8px 32px rgba(0,0,0,0.4)', userSelect: 'text' }
+                        web: { boxShadow: '0 4px 12px rgba(0,0,0,0.3)', userSelect: 'text' }
                     })
                 },
                 animatedStyle
             ]}
         >
-            <Text selectable={true} style={{ fontSize: 32, fontWeight: '800', color: isActive ? COLORS.background.card : color, marginBottom: 4, letterSpacing: -1 }}>{count}</Text>
-            <Text selectable={true} style={{ fontSize: 11, fontWeight: '700', textTransform: 'uppercase', color: isActive ? COLORS.background.card : COLORS.text.muted, letterSpacing: 1 }}>{label}</Text>
+            <Text selectable={true} style={{ fontSize: 32, fontWeight: '800', color: COLORS.text.primary, marginBottom: 8, letterSpacing: -1.5 }}>{count}</Text>
+            <Text selectable={true} style={{ fontSize: 11, fontWeight: '800', textTransform: 'uppercase', color: isActive ? COLORS.accent.tertiary : COLORS.text.muted, letterSpacing: 1.5 }}>{label}</Text>
         </AnimatedPressable>
     );
 }
+
 
 export default function ResidentDashboard({ navigation }) {
     const [passes, setPasses] = useState([]);
@@ -143,7 +146,7 @@ export default function ResidentDashboard({ navigation }) {
             {/* Header Bar */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24, ...Platform.select({ web: { userSelect: 'text' } }) }}>
                 <View>
-                    <Text selectable={true} style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>GATE<Text selectable={true} style={{ color: COLORS.accent.primary }}>0</Text></Text>
+                    <Text selectable={true} style={{ fontSize: 34, fontWeight: '800', color: COLORS.text.primary, letterSpacing: -1.5 }}>GATE0</Text>
                     <Text selectable={true} style={{ fontSize: 13, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 2 }}>
                         {user ? `${user.house_number}` : 'AUTH SECURE'}
                     </Text>
