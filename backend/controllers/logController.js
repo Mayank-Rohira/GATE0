@@ -10,7 +10,7 @@ function getGuardLogs(req, res) {
     const { date, limit } = req.query;
     const maxResults = parseInt(limit, 10) || 100;
 
-    let query = 'SELECT * FROM guard_logs WHERE guard_id = ?';
+    let query = 'SELECT * FROM guard_logs WHERE guard_mobile = ?';
     const params = [guardMobile];
 
     if (date) {

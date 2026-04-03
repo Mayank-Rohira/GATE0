@@ -1,7 +1,7 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DefaultTheme } from '@react-navigation/native';
 import { ScanLine, FileText, UserCircle } from 'lucide-react-native';
 import { Dock } from '../components/ui/dock';
 import RoleSelectScreen from '../screens/RoleSelectScreen';

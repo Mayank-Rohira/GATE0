@@ -128,7 +128,7 @@ function approvePass(req, res) {
     db.prepare('UPDATE passes SET status = ? WHERE id = ?').run('approved', pass.id);
 
     const logResult = db.prepare(
-        `INSERT INTO guard_logs (pass_id, guard_id, visitor_name, visitor_mobile, resident_name, house_number, society_name)
+        `INSERT INTO guard_logs (pass_id, guard_mobile, visitor_name, visitor_mobile, resident_name, house_number, society_name)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(
         pass.id, req.user.mobile, pass.visitor_name, pass.visitor_mobile,

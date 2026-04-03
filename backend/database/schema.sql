@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS passes (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
   pass_code      TEXT NOT NULL UNIQUE,
-  resident_id    INTEGER NOT NULL REFERENCES users(id),
+  resident_mobile TEXT NOT NULL REFERENCES users(mobile),
   visitor_mobile TEXT NOT NULL,
   visitor_name   TEXT NOT NULL,
   service_name   TEXT NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS passes (
 CREATE TABLE IF NOT EXISTS guard_logs (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
   pass_id        INTEGER NOT NULL REFERENCES passes(id),
-  guard_id       INTEGER NOT NULL REFERENCES users(id),
+  guard_mobile   TEXT NOT NULL REFERENCES users(mobile),
   visitor_name   TEXT NOT NULL,
   visitor_mobile TEXT NOT NULL,
   resident_name  TEXT NOT NULL,
