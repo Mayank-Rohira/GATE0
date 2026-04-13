@@ -42,3 +42,4 @@ yarn-error.*
 .env.local
 .env.*.local
 *.pem
+todo.md
