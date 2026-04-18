@@ -25,7 +25,7 @@ Resident (Issue) → API (JWT Verify) → SQLite (Pending) → Frontend (XOR-Obf
                                                                         ↓
 Guard (Scan QR) ← Scan Logic (Decrypt) ← API (RBAC: Guard) ← Pass Controller (Verify)
                                      ↓
-Audit Log (Created) ← DB Transaction (Pass: Approved)
+Audit Log (Created) ← Atomic DB Transaction (Pass: Approved)
 ```
 
 **Key Feature: Rich QR Schema**
@@ -35,12 +35,11 @@ Instead of simple IDs, the system generates a rich payload that is XOR-obfuscate
 
 ## Tech stack
 
-| Layer | Technology | Why I chose it |
-|---|---|---|
-| **Frontend** | React Native / Expo | Cross-platform reach (Web/iOS/Android) with a single codebase and high-performance native modules. |
-| **Styling** | NativeWind / Tailwind | Rapid UI development with utility-first logic that bridges the gap between web and native styling. |
-| **Backend** | Node.js / Express | Fast development cycle and excellent support for asynchronous I/O and JWT middleware. |
-| **Database** | better-sqlite3 | Native performance and WAL mode support, ideal for high-concurrency local-first deployments. |
+| **Frontend** | React Native / Expo | Cross-platform (Web/iOS/Android) with **Reanimated** kinetic interactions. |
+| **Styling** | NativeWind | Utility-first logic bridging web and native styling hierarchies. |
+| **Backend** | Node.js / Express | Robust async I/O with **better-sqlite3** atomic transactions. |
+| **Database** | SQLite (WAL) | High-performance local-first engine with optimized relational indexing. |
+| **Security** | XOR + JWT | Client-side obfuscation for QR payloads + stateless role-based auth. |
 
 ---
 
@@ -66,8 +65,7 @@ npx expo start
 
 ---
 
-## If I had more time
-
+- **Cloud Database Migration** — Transition from local SQLite to a high-availability Cloud Database (Supabase/Neon) to ensure multi-terminal persistence and global accessibility.
 - **Signed QR Payloads** — I would implement HMAC signing for the QR payloads. This would allow guard devices to verify the authenticity of a pass even if the central server is temporarily unreachable (Offline Validation).
 - **Socket.io Integration** — Implement a Pub/Sub mechanism to push instant "Entry Approved" notifications to the Resident's device the moment a guard scans the pass, replacing the current polling mechanism.
 - **Biometric Guard Auth** — Integrate FaceID/Fingerprint validation for the Guard Persona to ensure the terminal remains locked to authorized personnel only.

@@ -1,6 +1,3 @@
-# Security Documentation
-docs/
-
 # Modern OS cleanup
 .DS_Store
 .AppleDouble
@@ -42,4 +39,3 @@ yarn-error.*
 .env.local
 .env.*.local
 *.pem
-todo.md

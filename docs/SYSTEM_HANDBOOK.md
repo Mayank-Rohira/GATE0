@@ -7,18 +7,19 @@ GATE0 is built as a mission-critical, local-first platform for access orchestrat
 
 ## 🏗️ Technical Stack
 ### Backend: Node.js / Express Core
-- **Persistence**: High-integrity SQLite with semi-normalized schema for low-latency audit performance. Optimized with Write-Ahead Logging (WAL) for concurrent operations.
+- **Persistence**: High-integrity SQLite with performance-optimized indexes for sub-second audit lookups. Optimized with Write-Ahead Logging (WAL) and atomic database transactions to ensure no orphaned log entries.
 - **Security Protocols**: 
   - JWT-driven stateless session management for Residents, Visitors, and Guards.
   - Bcrypt password hashing (10 salt rounds).
-  - Secure, metadata-rich QR tokenization for sub-second verification.
+  - Secure, metadata-rich QR tokenization for validation.
 - **Logic Layers**: 
   - `Auth Controller`: Secure onboarding and role-based token issuance.
-  - `Pass Controller`: Managing pass lifecycle (Generate -> Approve -> Log).
+  - `Pass Controller`: Managing pass lifecycle with atomic `Approve -> Log` transactions.
   - `Log Controller`: Unified audit stream for security oversight.
 
 ### Frontend: Cross-Platform Kinetic Shell (React Native)
 - **Framework**: Expo (React Native) with NativeWind (Tailwind v3.4+) logic.
+- **Security Logic**: XOR-obfuscation of QR payloads performed on the client-side to prevent generic scanner extraction.
 - **Design System**: "The Obsidian Standard" — a deep-charcoal, tactile UI language using:
   - **Inter & Montserrat Typography**: Professional grotesque and geometric type for absolute clarity.
   - **Tonal Layering**: Depth achieved through etched surface hierarchy and sophisticated color tokens.

@@ -125,21 +125,30 @@ function approvePass(req, res) {
         return res.status(409).json({ error: 'Pass already approved' });
     }
 
-    db.prepare('UPDATE passes SET status = ? WHERE id = ?').run('approved', pass.id);
+    const approveAndLog = db.transaction((passData, guardMobile) => {
+        db.prepare('UPDATE passes SET status = ? WHERE id = ?').run('approved', passData.id);
 
-    const logResult = db.prepare(
-        `INSERT INTO guard_logs (pass_id, guard_mobile, visitor_name, visitor_mobile, resident_name, house_number, society_name)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-        pass.id, req.user.mobile, pass.visitor_name, pass.visitor_mobile,
-        pass.resident_name, pass.house_number, pass.society_name
-    );
-
-    res.json({
-        message: 'Entry approved',
-        log_id: logResult.lastInsertRowid,
-        timestamp: new Date().toISOString()
+        return db.prepare(
+            `INSERT INTO guard_logs (pass_id, guard_mobile, visitor_name, visitor_mobile, resident_name, house_number, society_name)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+        ).run(
+            passData.id, guardMobile, passData.visitor_name, passData.visitor_mobile,
+            passData.resident_name, passData.house_number, passData.society_name
+        );
     });
+
+    try {
+        const logResult = approveAndLog(pass, req.user.mobile);
+
+        res.json({
+            message: 'Entry approved',
+            log_id: logResult.lastInsertRowid,
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error('Transaction failed:', err);
+        res.status(500).json({ error: 'Failed to approve pass and generate log' });
+    }
 }
 
 function denyPass(req, res) {

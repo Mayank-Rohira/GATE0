@@ -33,3 +33,9 @@ CREATE TABLE IF NOT EXISTS guard_logs (
   society_name   TEXT NOT NULL,
   timestamp      DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Performance Indexes for Zero-Latency Search
+CREATE INDEX IF NOT EXISTS idx_users_mobile ON users(mobile);
+CREATE INDEX IF NOT EXISTS idx_passes_resident_mobile ON passes(resident_mobile);
+CREATE INDEX IF NOT EXISTS idx_passes_pass_code ON passes(pass_code);
+CREATE INDEX IF NOT EXISTS idx_guard_logs_guard_mobile ON guard_logs(guard_mobile);
