@@ -1,15 +1,22 @@
-const path = require('path');
-const fs = require('fs');
-const Database = require('better-sqlite3');
+const { Pool } = require('pg');
 
-const dbPath = process.env.DB_PATH || './gate0.db';
-const db = new Database(dbPath);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
 
-const schemaPath = path.join(__dirname, 'schema.sql');
-const schema = fs.readFileSync(schemaPath, 'utf-8');
-db.exec(schema);
+// Helper for queries
+const query = (text, params) => pool.query(text, params);
 
-module.exports = db;
+// Helper for transactions
+const getClient = () => pool.connect();
+
+module.exports = {
+  query,
+  getClient,
+  pool
+};

@@ -21,24 +21,26 @@ async function signup(req, res) {
         return res.status(400).json({ error: 'House number and society name required for residents' });
     }
 
-    const existing = db.prepare('SELECT id FROM users WHERE mobile = ?').get(mobile);
-    if (existing) {
-        return res.status(409).json({ error: 'Mobile number already registered' });
-    }
-
     try {
+        const existingResult = await db.query('SELECT id FROM users WHERE mobile = $1', [mobile]);
+        if (existingResult.rows.length > 0) {
+            return res.status(409).json({ error: 'Mobile number already registered' });
+        }
+
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-        const result = db.prepare(
+        const result = await db.query(
             `INSERT INTO users (name, mobile, password_hash, role, house_number, society_name)
-       VALUES (?, ?, ?, ?, ?, ?)`
-        ).run(name, mobile, passwordHash, role, house_number || '', society_name || '');
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+            [name, mobile, passwordHash, role, house_number || '', society_name || '']
+        );
 
         res.status(201).json({
             message: 'Account created successfully',
-            user: { id: result.lastInsertRowid, name, mobile, role }
+            user: { id: result.rows[0].id, name, mobile, role }
         });
     } catch (err) {
+        console.error('Signup error:', err);
         res.status(500).json({ error: 'Failed to create account' });
     }
 }
@@ -51,12 +53,14 @@ async function login(req, res) {
         return res.status(400).json({ error: 'Missing fields' });
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE mobile = ?').get(mobile);
-    if (!user) {
-        return res.status(401).json({ error: 'Invalid mobile or password' });
-    }
-
     try {
+        const result = await db.query('SELECT * FROM users WHERE mobile = $1', [mobile]);
+        const user = result.rows[0];
+
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid mobile or password' });
+        }
+
         const match = await bcrypt.compare(password, user.password_hash);
         if (!match) {
             return res.status(401).json({ error: 'Invalid mobile or password' });
@@ -83,6 +87,7 @@ async function login(req, res) {
             }
         });
     } catch (err) {
+        console.error('Login error:', err);
         res.status(500).json({ error: 'Login failed' });
     }
 }

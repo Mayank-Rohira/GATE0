@@ -1,16 +1,16 @@
 CREATE TABLE IF NOT EXISTS users (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  id            SERIAL PRIMARY KEY,
   name          TEXT NOT NULL,
   mobile        TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   role          TEXT NOT NULL CHECK(role IN ('resident', 'visitor', 'guard')),
   house_number  TEXT,
   society_name  TEXT,
-  created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS passes (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  id             SERIAL PRIMARY KEY,
   pass_code      TEXT NOT NULL UNIQUE,
   resident_mobile TEXT NOT NULL REFERENCES users(mobile),
   visitor_mobile TEXT NOT NULL,
@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS passes (
   house_number   TEXT NOT NULL,
   society_name   TEXT NOT NULL,
   status         TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved')),
-  created_at     DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS guard_logs (
-  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  id             SERIAL PRIMARY KEY,
   pass_id        INTEGER NOT NULL REFERENCES passes(id),
   guard_mobile   TEXT NOT NULL REFERENCES users(mobile),
   visitor_name   TEXT NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS guard_logs (
   resident_name  TEXT NOT NULL,
   house_number   TEXT NOT NULL,
   society_name   TEXT NOT NULL,
-  timestamp      DATETIME DEFAULT CURRENT_TIMESTAMP
+  timestamp      TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Performance Indexes for Zero-Latency Search
