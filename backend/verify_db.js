@@ -7,8 +7,11 @@ async function verify() {
     const res = await pool.query('SELECT NOW()');
     console.log('Connection successful! Current time from DB:', res.rows[0].now);
     
-    console.log('Checking required tables...');
+    console.log('Checking required tables and columns...');
     const requiredTables = ['users', 'passes', 'guard_logs'];
+    const requiredColumns = {
+        passes: ['category', 'expected_time', 'expiry_at']
+    };
     const tablesResult = await pool.query(`
       SELECT table_name 
       FROM information_schema.tables 
@@ -21,7 +24,25 @@ async function verify() {
     const missingTables = requiredTables.filter(t => !existingTables.includes(t));
     
     if (missingTables.length === 0) {
-      console.log('✅ All required tables (users, passes, guard_logs) are present.');
+      console.log('✅ All required tables are present.');
+      
+      // Check columns
+      for (const table in requiredColumns) {
+        const columnsResult = await pool.query(`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = $1 AND table_schema = 'public'
+        `, [table]);
+        
+        const existingColumns = columnsResult.rows.map(c => c.column_name);
+        const missingColumns = requiredColumns[table].filter(c => !existingColumns.includes(c));
+        
+        if (missingColumns.length === 0) {
+          console.log(`✅ All required columns for table "${table}" are present.`);
+        } else {
+          console.warn(`❌ Missing columns in table "${table}":`, missingColumns.join(', '));
+        }
+      }
     } else {
       console.warn('❌ Missing required tables:', missingTables.join(', '));
       console.log('Please run backend/database/schema.sql to initialize the database.');

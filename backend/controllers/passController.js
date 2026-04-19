@@ -7,11 +7,15 @@ function generatePassCode() {
 }
 
 async function createPass(req, res) {
-    const { service_name, visitor_name, visitor_mobile: rawMobile } = req.body;
+    const { service_name, visitor_name, visitor_mobile: rawMobile, category = 'guest', expected_time = null } = req.body;
     const visitor_mobile = normalizeMobile(rawMobile);
 
     if (!service_name || !visitor_name || !visitor_mobile) {
         return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!['food', 'cab', 'ecommerce', 'guest'].includes(category)) {
+        return res.status(400).json({ error: 'Invalid category' });
     }
 
     try {
@@ -26,12 +30,19 @@ async function createPass(req, res) {
             }
         }
 
+        let expiryAt = null;
+        if (expected_time) {
+            const bufferMinutes = Math.floor(expected_time * 1.2);
+            expiryAt = new Date(Date.now() + bufferMinutes * 60 * 1000);
+        }
+
         const insertResult = await db.query(
-            `INSERT INTO passes (pass_code, resident_mobile, visitor_mobile, visitor_name, service_name, house_number, society_name)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            `INSERT INTO passes (pass_code, resident_mobile, visitor_mobile, visitor_name, service_name, house_number, society_name, category, expected_time, expiry_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
             [
                 passCode, req.user.mobile, visitor_mobile, visitor_name,
-                service_name, req.user.house_number, req.user.society_name
+                service_name, req.user.house_number, req.user.society_name,
+                category, expected_time, expiryAt
             ]
         );
 
@@ -43,6 +54,8 @@ async function createPass(req, res) {
             visitor_name: pass.visitor_name,
             visitor_mobile: pass.visitor_mobile,
             service_name: pass.service_name,
+            category: pass.category,
+            expiry_at: pass.expiry_at,
             resident_name: req.user.name,
             resident_mobile: req.user.mobile,
             house_number: pass.house_number,
@@ -122,6 +135,10 @@ async function validatePass(req, res) {
 
         if (pass.status === 'approved') {
             return res.status(410).json({ valid: false, error: 'Pass already used' });
+        }
+
+        if (pass.expiry_at && new Date() > new Date(pass.expiry_at)) {
+            return res.status(403).json({ valid: false, error: 'Pass expired' });
         }
 
         res.json({ valid: true, pass });

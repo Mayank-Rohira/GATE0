@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS passes (
   house_number   TEXT NOT NULL,
   society_name   TEXT NOT NULL,
   status         TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'approved')),
+  category       TEXT NOT NULL DEFAULT 'guest' CHECK(category IN ('food', 'cab', 'ecommerce', 'guest')),
+  expected_time  INTEGER, -- minutes
+  expiry_at      TIMESTAMPTZ,
   created_at     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 

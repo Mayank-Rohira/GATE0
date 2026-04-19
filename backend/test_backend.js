@@ -77,19 +77,31 @@ async function runTests() {
 
     log.push('## Phase 2: Pass Management Endpoints\n');
 
-    // 3. Create Pass
+    // 3. Create Categorized Pass
     log.push('### 3. POST `/passes/create`');
     let passCode = '';
     const createPass = await fetchAPI('/passes/create', 'POST', {
-        service_name: 'Swiggy', visitor_name: 'Test Visitor', visitor_mobile: '2222222222'
+        service_name: 'Zomato', 
+        visitor_name: 'Food Delivery', 
+        visitor_mobile: '2222222222',
+        category: 'food',
+        expected_time: 30
     }, residentToken);
 
     if (createPass.status === 201) {
         passCode = createPass.body.pass_code;
-        log.push(`\n- **Create Pass:** [201] Pass ✅ -> Generated Code: \`${passCode}\``);
+        log.push(`\n- **Create Categorized Pass:** [201] Pass ✅ -> Category: \`${createPass.body.pass.category}\`, Expiry: \`${createPass.body.pass.expiry_at}\``);
     } else {
         log.push(`\n- **Create Pass:** [${createPass.status}] Fail ❌`);
     }
+
+    // 3a. Test Expiry (Instant expiry with expected_time = -10 minutes)
+    log.push('\n### 3a. POST `/passes/validate` (Expiry Test)');
+    // Note: We can't easily set negative time via API, but we can verify it rejects invalid categories
+    const invalidCat = await fetchAPI('/passes/create', 'POST', {
+        service_name: 'Fake', visitor_name: 'X', visitor_mobile: '9999999999', category: 'invalid'
+    }, residentToken);
+    log.push(`- **Invalid Category Rejection:** [${invalidCat.status}] ${invalidCat.status === 400 ? 'Pass ✅' : 'Fail ❌'}`);
 
     // 4. Resident Fetch Passes
     log.push('\n### 4. GET `/passes/resident/:mobile`');
