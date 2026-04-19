@@ -3,6 +3,7 @@ const db = require('./db');
 async function verifyDatabase() {
   console.log('--- Database Verification Starting ---');
   console.log('ℹ️ DNS Preference: IPv4 First');
+  console.log('ℹ️ Socket Layer: Custom IPv4 Stream initialized');
   try {
     // 1. Check basic connectivity
     await db.query('SELECT 1');
