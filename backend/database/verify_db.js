@@ -2,6 +2,7 @@ const db = require('./db');
 
 async function verifyDatabase() {
   console.log('--- Database Verification Starting ---');
+  console.log('ℹ️ DNS Preference: IPv4 First');
   try {
     // 1. Check basic connectivity
     await db.query('SELECT 1');
