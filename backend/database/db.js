@@ -3,7 +3,9 @@ const { Pool } = require('pg');
 const dbConfig = {
   connectionString: process.env.DATABASE_URL,
   // Force IPv4 to avoid ENETUNREACH errors on ipv6 resolution (common on Render)
-  family: 4
+  family: 4,
+  // Recommended for use with Supabase Transaction Pooler
+  max: 10
 };
 
 // Enable SSL for cloud-to-cloud connections (primarily for Render -> Supabase)
