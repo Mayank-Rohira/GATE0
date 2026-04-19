@@ -3,10 +3,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const db = require('./database/db');
+const verifyDatabase = require('./database/verify_db');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Run automated diagnostics on startup
+verifyDatabase();
 
 const authRoutes = require('./routes/auth');
 app.use(authRoutes);

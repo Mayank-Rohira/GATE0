@@ -1,8 +1,19 @@
 const { Pool } = require('pg');
 
-const pool = new Pool({
+const dbConfig = {
   connectionString: process.env.DATABASE_URL,
-});
+  // Force IPv4 to avoid ENETUNREACH errors on ipv6 resolution (common on Render)
+  family: 4
+};
+
+// Enable SSL for cloud-to-cloud connections (primarily for Render -> Supabase)
+if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')) {
+  dbConfig.ssl = {
+    rejectUnauthorized: false
+  };
+}
+
+const pool = new Pool(dbConfig);
 
 pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);

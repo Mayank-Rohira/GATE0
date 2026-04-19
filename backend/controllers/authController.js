@@ -40,8 +40,15 @@ async function signup(req, res) {
             user: { id: result.rows[0].id, name, mobile, role }
         });
     } catch (err) {
-        console.error('Signup error:', err);
-        res.status(500).json({ error: 'Failed to create account' });
+        console.error('--- CRITICAL SIGNUP FAILURE ---');
+        console.error('Error details:', err);
+        console.error('Table info:', err.table || 'N/A');
+        console.error('Constraint:', err.constraint || 'N/A');
+        console.error('--------------------------------');
+        res.status(500).json({ 
+            error: 'Failed to create account. This is likely a database connection or schema issue.',
+            details: err.message
+        });
     }
 }
 
