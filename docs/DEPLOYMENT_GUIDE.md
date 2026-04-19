@@ -1,10 +1,22 @@
 # GATE0 Deployment Guide
 
-This guide will help you deploy the GATE0 project to the cloud using **Render** for the backend and **Vercel** for the frontend.
+This guide will help you deploy the GATE0 project to the cloud using **Render** for the backend, **Supabase** for the database, and **Vercel** for the frontend.
 
-## 🚀 1. Deploy the Backend (Render)
+## 🛢️ 1. Database Setup (Supabase)
 
-Render is great for Node.js/Express apps. Since GATE0 uses SQLite3, please note that files are NOT persistent on Render's free tier. 
+GATE0 uses **Supabase (PostgreSQL)** for high-availability cloud persistence.
+
+1.  **Create a Supabase Project**: Go to [supabase.com](https://supabase.com).
+2.  **Get Connection String**: 
+    - Go to **Project Settings** > **Database**.
+    - Copy the **Connection String** (Transaction mode recommended for serverless/pooled connections).
+    - Ensure your password is URL-encoded if it contains special characters.
+
+---
+
+## 🚀 2. Deploy the Backend (Render)
+
+Render is great for Node.js/Express apps.
 
 ### Steps:
 1.  **Create a Render Account**: Go to [render.com](https://render.com).
@@ -17,13 +29,14 @@ Render is great for Node.js/Express apps. Since GATE0 uses SQLite3, please note 
     - **Build Command**: `npm install`
     - **Start Command**: `npm start`
 5.  **Environment Variables**:
+    - Add `DATABASE_URL`: Your Supabase connection string.
     - Add `JWT_SECRET`: (Any secure random string).
     - Add `PORT`: `3000`
 6.  **Deploy**: Once finished, you will get a URL like `https://gate0-backend.onrender.com`.
 
 ---
 
-## 🎨 2. Deploy the Frontend (Vercel)
+## 🎨 3. Deploy the Frontend (Vercel)
 
 Vercel is ideal for the React Native/Expo web version.
 
@@ -43,7 +56,7 @@ Vercel is ideal for the React Native/Expo web version.
 
 ---
 
-## 📱 3. Connecting the Mobile App (Expo Go)
+## 📱 4. Connecting the Mobile App (Expo Go)
 
 To use the Cloud backend on your physical device via `expo start`:
 
@@ -53,9 +66,3 @@ To use the Cloud backend on your physical device via `expo start`:
 2.  **Launch**:
     - Run `npx expo start --clear`
     - Scan the QR in the **Expo Go** app. It will now communicate with the Cloud backend.
-
----
-
-## ⚠️ Important Note on Persistence
-Render's free tier resets the filesystem on every deploy. Your users/passes will be deleted when the server restarts. 
-**For Production**: Migrate to a Render **PostgreSQL** instance and update `backend/database/db.js` to use a PG client instead of `better-sqlite3`.
