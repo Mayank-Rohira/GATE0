@@ -2,24 +2,20 @@ const { Pool } = require('pg');
 
 const net = require('net');
 
+const dbUrl = (process.env.DATABASE_URL || '').trim();
+
+if (!dbUrl) {
+  console.error('❌ CRITICAL: DATABASE_URL is missing in environment variables.');
+}
+
 const dbConfig = {
-  connectionString: process.env.DATABASE_URL,
-  // Force IPv4 to avoid ENETUNREACH errors on ipv6 resolution (common on Render)
-  family: 4,
+  connectionString: dbUrl,
   // Recommended for use with Supabase Transaction Pooler
-  max: 10,
-  // Force IPv4 at the socket level
-  stream: (prop) => {
-    return net.connect({
-      host: prop.host,
-      port: prop.port,
-      family: 4
-    });
-  }
+  max: 10
 };
 
 // Enable SSL for cloud-to-cloud connections (primarily for Render -> Supabase)
-if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')) {
+if (dbUrl && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1')) {
   dbConfig.ssl = {
     rejectUnauthorized: false
   };
