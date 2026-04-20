@@ -123,10 +123,21 @@ export default function CreatePassScreen({ navigation }) {
                     }}>
                         <View style={{ backgroundColor: '#ffffff', padding: 12, borderRadius: 24, marginBottom: 24 }}>
                             <QRCode
-                                value={encryptPassData(createdPass)}
-                                size={200}
+                                value={encryptPassData({
+                                    id: createdPass.pass_code,
+                                    vn: createdPass.visitor_name,
+                                    vm: createdPass.visitor_mobile,
+                                    sn: createdPass.service_name,
+                                    rn: createdPass.resident_name || 'Resident',
+                                    hn: createdPass.house_number,
+                                    soc: createdPass.society_name,
+                                    status: 'pending'
+                                })}
+                                size={260}
                                 color="#000000"
                                 backgroundColor="#ffffff"
+                                ecl="H"
+                                quietZone={20}
                             />
                         </View>
 
