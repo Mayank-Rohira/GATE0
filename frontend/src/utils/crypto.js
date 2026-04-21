@@ -27,7 +27,8 @@ export const encryptPassData = (data, useLegacy = false) => {
             const sn = data.sn || data.service_name || '';
             const rn = data.rn || data.resident_name || '';
             const hn = data.hn || data.house_number || '';
-            payload = `${id}|${vn}|${vm}|${sn}|${rn}|${hn}`;
+            const soc = data.soc || data.society_name || '';
+            payload = `${id}|${vn}|${vm}|${sn}|${rn}|${hn}|${soc}`;
         } else {
             payload = data.replace('PASS_', '');
         }
@@ -79,7 +80,7 @@ export const decryptPassData = (encryptedString) => {
         }
         
         if (version === 'V3') {
-            const [id, vn, vm, sn, rn, hn] = result.split('|');
+            const [id, vn, vm, sn, rn, hn, soc] = result.split('|');
             return {
                 id: `PASS_${id}`,
                 pass_code: `PASS_${id}`,
@@ -88,6 +89,7 @@ export const decryptPassData = (encryptedString) => {
                 service_name: sn,
                 resident_name: rn,
                 house_number: hn,
+                society_name: soc,
                 status: 'pending' // Default for offline
             };
         }

@@ -107,7 +107,7 @@ export default function LogsScreen() {
         if (filteredLogs.length === 0) return;
         
         try {
-            const headers = ['Date', 'Time', 'Visitor Name', 'Visitor Mobile', 'Service', 'Resident', 'House', 'Status'];
+            const headers = ['Date', 'Time', 'Visitor Name', 'Visitor Mobile', 'Service', 'Resident', 'House', 'Residency'];
             const rows = filteredLogs.map(log => [
                 `"${log.date || ''}"`,
                 `"${log.time || ''}"`,

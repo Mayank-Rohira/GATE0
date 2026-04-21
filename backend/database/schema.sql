@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS guard_logs (
   visitor_name   TEXT NOT NULL,
   visitor_mobile TEXT NOT NULL,
   resident_name  TEXT NOT NULL,
+  service_name   TEXT,
   house_number   TEXT NOT NULL,
   society_name   TEXT NOT NULL,
   timestamp      TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP

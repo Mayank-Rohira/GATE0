@@ -180,11 +180,11 @@ async function approvePass(req, res) {
             await client.query('UPDATE passes SET status = $1 WHERE id = $2', ['approved', pass.id]);
 
             const logResult = await client.query(
-                `INSERT INTO guard_logs (pass_id, guard_mobile, visitor_name, visitor_mobile, resident_name, house_number, society_name)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+                `INSERT INTO guard_logs (pass_id, guard_mobile, visitor_name, visitor_mobile, resident_name, service_name, house_number, society_name)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
                 [
                     pass.id, req.user.mobile, pass.visitor_name, pass.visitor_mobile,
-                    pass.resident_name, pass.house_number, pass.society_name
+                    pass.resident_name, pass.service_name, pass.house_number, pass.society_name
                 ]
             );
 
