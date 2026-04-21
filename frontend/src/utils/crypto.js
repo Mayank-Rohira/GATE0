@@ -1,9 +1,42 @@
 const SECRET_KEY = "GATE0_SECURE_TOKEN_2026";
 
 /**
+ * Manual Base64 Implementation for React Native compatibility
+ */
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+const Base64 = {
+    btoa: (input = '') => {
+        let str = String(input);
+        let output = '';
+        for (let block = 0, charCode, i = 0, map = chars;
+            str.charAt(i | 0) || (map = '=', i % 1);
+            output += map.charAt(63 & block >> 8 - i % 1 * 8)) {
+            charCode = str.charCodeAt(i += 3 / 4);
+            if (charCode > 0xFF) {
+                throw new Error("'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");
+            }
+            block = block << 8 | charCode;
+        }
+        return output;
+    },
+    atob: (input = '') => {
+        let str = String(input).replace(/[=]+$/, '');
+        let output = '';
+        if (str.length % 4 === 1) {
+            throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+        }
+        for (let bc = 0, bs, buffer, i = 0;
+            buffer = str.charAt(i++);
+            ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+                bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0) {
+            buffer = chars.indexOf(buffer);
+        }
+        return output;
+    }
+};
+
+/**
  * Simple XOR-based "encryption" for QR codes.
- * Not military grade, but sufficient to prevent human reading and basic camera scanners.
- * Generic scanners will see the prefix text, our app will decode the payload.
  */
 export const encryptPassData = (data, useLegacy = false) => {
     try {
@@ -13,24 +46,22 @@ export const encryptPassData = (data, useLegacy = false) => {
             for (let i = 0; i < jsonString.length; i++) {
                 result += String.fromCharCode(jsonString.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
             }
-            const b64 = btoa(result);
+            const b64 = Base64.btoa(result);
             return `GATE0 SECURITY SYSTEM: UNAUTHORIZED TERMINAL DETECTED. LOGGING UNIT COORDINATES... \n\nDECRYPTION_ID: G0_V1_${b64}`;
         }
 
-        // V3 Optimization: Delimited string for maximum density reduction
-        // Payload: id|vn|vm|sn|rn|hn
         let payload = '';
         if (typeof data === 'object') {
-            const id = (data.id || data.pass_code || '').replace('PASS_', '');
-            const vn = data.vn || data.visitor_name || '';
-            const vm = data.vm || data.visitor_mobile || '';
-            const sn = data.sn || data.service_name || '';
-            const rn = data.rn || data.resident_name || '';
-            const hn = data.hn || data.house_number || '';
-            const soc = data.soc || data.society_name || '';
+            const id = String(data.id || data.pass_code || '').replace(/^PASS_/, '');
+            const vn = String(data.vn || data.visitor_name || '');
+            const vm = String(data.vm || data.visitor_mobile || '');
+            const sn = String(data.sn || data.service_name || '');
+            const rn = String(data.rn || data.resident_name || '');
+            const hn = String(data.hn || data.house_number || '');
+            const soc = String(data.soc || data.society_name || '');
             payload = `${id}|${vn}|${vm}|${sn}|${rn}|${hn}|${soc}`;
         } else {
-            payload = data.replace('PASS_', '');
+            payload = String(data).replace(/^PASS_/, '');
         }
 
         let result = '';
@@ -38,7 +69,7 @@ export const encryptPassData = (data, useLegacy = false) => {
             result += String.fromCharCode(payload.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
         }
         
-        const b64 = btoa(result);
+        const b64 = Base64.btoa(result);
         return `G0:V3:${b64}`;
     } catch (e) {
         return typeof data === 'string' ? data : JSON.stringify(data);
@@ -57,6 +88,8 @@ const QR_KEY_MAP = {
 
 export const decryptPassData = (encryptedString) => {
     try {
+        if (!encryptedString) return { id: '' };
+        
         let payload = '';
         let version = '';
 
@@ -70,27 +103,34 @@ export const decryptPassData = (encryptedString) => {
             payload = encryptedString.split('DECRYPTION_ID: G0_V1_')[1];
             version = 'V1';
         } else {
-            return JSON.parse(encryptedString);
+            // Raw JSON fallback
+            try { return JSON.parse(encryptedString); } catch(e) { 
+                const raw = String(encryptedString).trim();
+                const normalized = raw.startsWith('PASS_') ? raw : `PASS_${raw}`;
+                return { id: normalized, pass_code: normalized };
+            }
         }
         
-        const decoded = atob(payload);
+        const decoded = Base64.atob(payload);
         let result = '';
         for (let i = 0; i < decoded.length; i++) {
             result += String.fromCharCode(decoded.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
         }
         
         if (version === 'V3') {
-            const [id, vn, vm, sn, rn, hn, soc] = result.split('|');
+            const parts = result.split('|');
+            const [id, vn, vm, sn, rn, hn, soc] = parts;
+            const normalizedId = String(id).startsWith('PASS_') ? id : `PASS_${id}`;
             return {
-                id: `PASS_${id}`,
-                pass_code: `PASS_${id}`,
-                visitor_name: vn,
-                visitor_mobile: vm,
-                service_name: sn,
-                resident_name: rn,
-                house_number: hn,
-                society_name: soc,
-                status: 'pending' // Default for offline
+                id: normalizedId,
+                pass_code: normalizedId,
+                visitor_name: vn || '',
+                visitor_mobile: vm || '',
+                service_name: sn || '',
+                resident_name: rn || '',
+                house_number: hn || '',
+                society_name: soc || '',
+                status: 'pending' 
             };
         }
 
@@ -103,20 +143,28 @@ export const decryptPassData = (encryptedString) => {
             });
             if (mapped.id && !mapped.pass_code) mapped.pass_code = mapped.id;
             if (mapped.pass_code && !mapped.id) mapped.id = mapped.pass_code;
-            if (typeof mapped.id === 'string' && !mapped.id.startsWith('PASS_')) {
-                mapped.id = `PASS_${mapped.id}`;
-                mapped.pass_code = mapped.id;
+            
+            if (mapped.id) {
+                const idStr = String(mapped.id);
+                if (!idStr.startsWith('PASS_')) {
+                    mapped.id = `PASS_${idStr}`;
+                    mapped.pass_code = mapped.id;
+                }
             }
             return mapped;
         } catch (e) {
-            const finalId = result.startsWith('PASS_') ? result : `PASS_${result}`;
+            const raw = result.trim();
+            const finalId = raw.startsWith('PASS_') ? raw : `PASS_${raw}`;
             return { id: finalId, pass_code: finalId };
         }
     } catch (e) {
         try {
             return JSON.parse(encryptedString);
         } catch (ee) {
-            return { id: encryptedString };
+            const raw = String(encryptedString).trim();
+            const finalId = raw.startsWith('PASS_') ? raw : `PASS_${raw}`;
+            return { id: finalId, pass_code: finalId };
         }
     }
 };
+

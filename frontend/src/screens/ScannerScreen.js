@@ -97,7 +97,11 @@ export default function ScannerScreen({ navigation }) {
                 
                 if (parsedData && (parsedData.id || parsedData.pass_code)) {
                     // Normalize standard pass data
-                    const passToNavigate = parsedData.id ? parsedData : { ...parsedData, id: parsedData.pass_code };
+                    let code = String(parsedData.id || parsedData.pass_code || '').trim();
+                    if (!code.toUpperCase().startsWith('PASS_')) {
+                        code = `PASS_${code}`;
+                    }
+                    const passToNavigate = { ...parsedData, id: code.toUpperCase() };
                     navigation.navigate('ScanResult', { passData: passToNavigate });
                     return;
                 }
@@ -125,11 +129,11 @@ export default function ScannerScreen({ navigation }) {
         bottomSheetRef.current?.close();
         
         let code = manualCode.trim();
-        if (!code.startsWith('PASS_')) {
+        if (!code.toUpperCase().startsWith('PASS_')) {
             code = `PASS_${code}`;
         }
         
-        navigation.navigate('ScanResult', { passData: { id: code } });
+        navigation.navigate('ScanResult', { passData: { id: code.toUpperCase() } });
         setManualCode('');
     };
 

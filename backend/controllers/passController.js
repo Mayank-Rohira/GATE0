@@ -46,7 +46,7 @@ async function createPass(req, res) {
             ]
         );
 
-        const pass = insertResult.rows[0];
+        const pass = { ...insertResult.rows[0], resident_name: req.user.name };
 
         // Create a rich JSON schema for the QR Code to allow instant scanning
         const qrPayload = {
@@ -56,8 +56,8 @@ async function createPass(req, res) {
             service_name: pass.service_name,
             category: pass.category,
             expiry_at: pass.expiry_at,
-            resident_name: req.user.name,
-            resident_mobile: req.user.mobile,
+            resident_name: pass.resident_name,
+            resident_mobile: pass.resident_mobile,
             house_number: pass.house_number,
             society_name: pass.society_name,
         };
@@ -120,12 +120,13 @@ async function validatePass(req, res) {
     }
 
     try {
+        const normalizedCode = String(pass_code).trim().toUpperCase();
         const result = await db.query(
             `SELECT p.*, u.name AS resident_name
        FROM passes p
        JOIN users u ON u.mobile = p.resident_mobile
-       WHERE p.pass_code = $1`,
-            [pass_code]
+       WHERE UPPER(p.pass_code) = $1`,
+            [normalizedCode]
         );
         const pass = result.rows[0];
 
@@ -156,12 +157,13 @@ async function approvePass(req, res) {
     }
 
     try {
+        const normalizedCode = String(pass_code).trim().toUpperCase();
         const result = await db.query(
             `SELECT p.*, u.name AS resident_name
        FROM passes p
        JOIN users u ON u.mobile = p.resident_mobile
-       WHERE p.pass_code = $1`,
-            [pass_code]
+       WHERE UPPER(p.pass_code) = $1`,
+            [normalizedCode]
         );
         const pass = result.rows[0];
 
