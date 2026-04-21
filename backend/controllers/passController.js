@@ -130,15 +130,15 @@ async function validatePass(req, res) {
         const pass = result.rows[0];
 
         if (!pass) {
-            return res.status(404).json({ valid: false, error: 'Pass not found' });
+            return res.status(404).json({ valid: false, error: 'PASS NOT FOUND' });
         }
 
         if (pass.status === 'approved') {
-            return res.status(410).json({ valid: false, error: 'Pass already used' });
+            return res.status(410).json({ valid: false, error: 'PASS ALREADY USED' });
         }
 
         if (pass.expiry_at && new Date() > new Date(pass.expiry_at)) {
-            return res.status(403).json({ valid: false, error: 'Pass expired' });
+            return res.status(403).json({ valid: false, error: 'PASS EXPIRED' });
         }
 
         res.json({ valid: true, pass });

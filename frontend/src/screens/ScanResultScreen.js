@@ -20,9 +20,7 @@ export default function ScanResultScreen({ navigation, route }) {
     const result = fullPass || passData;
 
     useEffect(() => {
-        if (!fullPass) {
-            fetchPassDetails();
-        }
+        fetchPassDetails();
     }, []);
 
     const fetchPassDetails = async () => {
@@ -108,7 +106,7 @@ export default function ScanResultScreen({ navigation, route }) {
 
     const getStatusConfig = () => {
         if (status === 'approved') return { label: 'ENTRY AUTHORIZED', color: COLORS.status.success, bg: COLORS.status.successBg };
-        if (status === 'denied' || status === 'invalid' || error) return { label: error ? 'INVALID TOKEN' : 'ACCESS DENIED', color: COLORS.status.error, bg: COLORS.status.errorBg };
+        if (status === 'denied' || status === 'invalid' || error) return { label: error || 'ACCESS DENIED', color: COLORS.status.error, bg: COLORS.status.errorBg };
         return { label: 'WAITING FOR DATA...', color: COLORS.accent.tertiary, bg: COLORS.status.warningBg };
     };
 

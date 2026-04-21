@@ -55,6 +55,7 @@ export default function ScannerScreen({ navigation }) {
     const [manualCode, setManualCode] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [scanned, setScanned] = useState(false);
+    const [scanError, setScanError] = useState(null);
     const [userInitials, setUserInitials] = useState('GR');
     const isFocused = useIsFocused();
     
@@ -64,7 +65,8 @@ export default function ScannerScreen({ navigation }) {
 
     useEffect(() => {
         if (isFocused) { 
-            setScanned(false); 
+            setScanned(false);
+            setScanError(null);
             flashOpacity.value = 0;
             getUser().then(u => {
                 if(u?.name) {
@@ -100,15 +102,21 @@ export default function ScannerScreen({ navigation }) {
                     return;
                 }
             } catch (e) {
-                // Legacy fallback or raw scan
-                if (typeof data === 'string' && data.startsWith('PASS_')) {
-                    navigation.navigate('ScanResult', { passData: { id: data } });
-                    return;
-                }
+                // FALLBACK logic (stay in try/catch or go to fallback)
             }
+
+            // If we reach here, it's an invalid scan
+            setScanError('INVALID FORMAT detected');
+            flashOpacity.value = withSequence(
+                withTiming(1, { duration: 100 }),
+                withTiming(0, { duration: 400 })
+            );
             
-                setIsVerifying(false); // Reset for next time if invalid
+            setTimeout(() => {
+                setScanError(null);
+                setIsVerifying(false);
                 setScanned(false);
+            }, 2000); // 2s cooldown for same bad QR
         }, 1200); // 1.2s synthetic delay
     }, [scanned, isVerifying, navigation]);
 
@@ -131,7 +139,7 @@ export default function ScannerScreen({ navigation }) {
 
     const flashStyle = useAnimatedStyle(() => ({
         opacity: flashOpacity.value,
-        backgroundColor: COLORS.status.success,
+        backgroundColor: scanError ? COLORS.status.error : COLORS.status.success,
     }));
 
     if (!permission) return (
@@ -210,13 +218,13 @@ export default function ScannerScreen({ navigation }) {
                                 
                                 <View style={{ flex: 1, alignItems: 'center' }}>
                                     <View style={{ 
-                                        backgroundColor: scanned ? COLORS.accent.primary : 'rgba(255,255,255,0.1)', 
+                                        backgroundColor: scanError ? COLORS.status.error : (scanned ? COLORS.accent.primary : 'rgba(255,255,255,0.1)'), 
                                         paddingHorizontal: 20, 
                                         paddingVertical: 10, 
                                         borderRadius: 24,
                                     }}>
                                         <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '800', letterSpacing: 2 }}>
-                                            {isVerifying ? 'RETRIEVING DATA...' : scanned ? 'VERIFYING...' : 'SYSTEM READY'}
+                                            {scanError ? scanError : (isVerifying ? 'RETRIEVING DATA...' : scanned ? 'VERIFYING...' : 'SYSTEM READY')}
                                         </Text>
                                     </View>
                                 </View>
