@@ -99,12 +99,12 @@ export default function VisitorDashboard({ navigation }) {
         // Compressed V2 payload with full info restoration
         return encryptPassData({ 
             id: pass.pass_code,
-            vn: pass.visitor_name,
-            vm: pass.visitor_mobile,
-            sn: pass.service_name,
-            rn: pass.resident_name || 'Resident',
-            hn: pass.house_number,
-            soc: pass.society_name,
+            visitor_name: pass.visitor_name,
+            visitor_mobile: pass.visitor_mobile,
+            service_name: pass.service_name,
+            resident_name: pass.resident_name || 'Resident',
+            house_number: pass.house_number,
+            society_name: pass.society_name,
             status: pass.status
         });
     };
