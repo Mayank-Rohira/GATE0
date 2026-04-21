@@ -121,16 +121,25 @@ async function validatePass(req, res) {
 
     try {
         const normalizedCode = String(pass_code).trim().toUpperCase();
+        console.log(`[VALIDATION] Attempting to validate pass: "${normalizedCode}"`);
+
+        // Defensive Query: Use TRIM and UPPER on stored data, and LEFT JOIN to handle potential data inconsistency
         const result = await db.query(
             `SELECT p.*, u.name AS resident_name
        FROM passes p
-       JOIN users u ON u.mobile = p.resident_mobile
-       WHERE UPPER(p.pass_code) = $1`,
+       LEFT JOIN users u ON u.mobile = p.resident_mobile
+       WHERE TRIM(UPPER(p.pass_code)) = $1`,
             [normalizedCode]
         );
         const pass = result.rows[0];
 
         if (!pass) {
+            console.warn(`[VALIDATION_FAILURE] Pass not found in DB: "${normalizedCode}"`);
+            // Check if it exists at all without the join (for diagnostics)
+            const rawCheck = await db.query('SELECT id FROM passes WHERE TRIM(UPPER(pass_code)) = $1', [normalizedCode]);
+            if (rawCheck.rows.length > 0) {
+                console.error(`[VALIDATION_FAILURE] Pass "${normalizedCode}" exists but resident join failed!`);
+            }
             return res.status(404).json({ valid: false, error: 'PASS NOT FOUND' });
         }
 
@@ -161,8 +170,8 @@ async function approvePass(req, res) {
         const result = await db.query(
             `SELECT p.*, u.name AS resident_name
        FROM passes p
-       JOIN users u ON u.mobile = p.resident_mobile
-       WHERE UPPER(p.pass_code) = $1`,
+       LEFT JOIN users u ON u.mobile = p.resident_mobile
+       WHERE TRIM(UPPER(p.pass_code)) = $1`,
             [normalizedCode]
         );
         const pass = result.rows[0];
@@ -217,7 +226,8 @@ async function denyPass(req, res) {
     }
 
     try {
-        const result = await db.query('SELECT id, status FROM passes WHERE pass_code = $1', [pass_code]);
+        const normalizedCode = String(pass_code).trim().toUpperCase();
+        const result = await db.query('SELECT id, status FROM passes WHERE TRIM(UPPER(pass_code)) = $1', [normalizedCode]);
         const pass = result.rows[0];
 
         if (!pass) {
