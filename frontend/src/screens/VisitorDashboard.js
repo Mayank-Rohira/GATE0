@@ -240,7 +240,7 @@ export default function VisitorDashboard({ navigation }) {
                                             size={260} 
                                             color="#000" 
                                             backgroundColor="#fff" 
-                                            ecl="H"
+                                            ecl="M"
                                             quietZone={20}
                                         />
                                     </View>
