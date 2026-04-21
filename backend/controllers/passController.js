@@ -14,12 +14,15 @@ async function createPass(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (!['food', 'cab', 'ecommerce', 'guest'].includes(category)) {
-        return res.status(400).json({ error: 'Invalid category' });
-    }
-
     try {
+        console.log(`[DB_CHECK] Validating category: ${category}`);
+        if (!['food', 'cab', 'ecommerce', 'guest'].includes(category)) {
+            return res.status(400).json({ error: 'Invalid category' });
+        }
+
         let passCode = generatePassCode();
+        console.log(`[DB_ACTION] Generating new pass: ${passCode}`);
+        
         let codeExists = true;
         while (codeExists) {
             const result = await db.query('SELECT id FROM passes WHERE pass_code = $1', [passCode]);
@@ -46,6 +49,12 @@ async function createPass(req, res) {
             ]
         );
 
+        if (insertResult.rowCount > 0) {
+            console.log(`✅ [DB_SUCCESS] Pass ${passCode} successfully saved to database.`);
+        } else {
+            console.error(`❌ [DB_FAILURE] Insert query returned 0 rows for ${passCode}!`);
+        }
+
         const pass = { ...insertResult.rows[0], resident_name: req.user.name };
 
         // Create a rich JSON schema for the QR Code to allow instant scanning
@@ -60,20 +69,25 @@ async function createPass(req, res) {
             resident_mobile: pass.resident_mobile,
             house_number: pass.house_number,
             society_name: pass.society_name,
+            status: pass.status
         };
 
-        res.status(201).json({ pass_code: passCode, qr_content: JSON.stringify(qrPayload), pass });
+        res.json({
+            ...pass,
+            qrPayload
+        });
     } catch (err) {
-        console.error('Create pass error:', err);
-        res.status(500).json({ error: 'Failed to create pass' });
+        console.error('Create Pass Error:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }
 
 async function getResidentPasses(req, res) {
-    const { mobile } = req.params;
+    const { mobile: rawMobile } = req.params;
+    const mobile = normalizeMobile(rawMobile);
 
-    if (mobile !== req.user.mobile) {
-        return res.status(403).json({ error: 'Cannot view other resident passes' });
+    if (!mobile) {
+        return res.status(400).json({ error: 'Valid mobile number required' });
     }
 
     try {
@@ -83,8 +97,8 @@ async function getResidentPasses(req, res) {
         );
         res.json({ passes: result.rows });
     } catch (err) {
-        console.error('Get resident passes error:', err);
-        res.status(500).json({ error: 'Failed to fetch passes' });
+        console.error('Get Resident Passes Error:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }
 
@@ -92,23 +106,24 @@ async function getVisitorPasses(req, res) {
     const { mobile: rawMobile } = req.params;
     const mobile = normalizeMobile(rawMobile);
 
-    if (mobile !== normalizeMobile(req.user.mobile)) {
-        return res.status(403).json({ error: 'Cannot view other visitor passes' });
+    if (!mobile) {
+        return res.status(400).json({ error: 'Valid mobile number required' });
     }
 
     try {
         const result = await db.query(
             `SELECT p.*, u.name AS resident_name
        FROM passes p
-       JOIN users u ON u.mobile = p.resident_mobile
+       LEFT JOIN users u ON u.mobile = p.resident_mobile
        WHERE p.visitor_mobile = $1
        ORDER BY p.created_at DESC`,
             [mobile]
         );
+
         res.json({ passes: result.rows });
     } catch (err) {
-        console.error('Get visitor passes error:', err);
-        res.status(500).json({ error: 'Failed to fetch passes' });
+        console.error('Get Passes Error:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }
 
@@ -144,7 +159,7 @@ async function validatePass(req, res) {
         }
 
         if (pass.status === 'approved') {
-            return res.status(410).json({ valid: false, error: 'PASS ALREADY USED' });
+            return res.status(400).json({ valid: false, error: 'PASS ALREADY USED' });
         }
 
         if (pass.expiry_at && new Date() > new Date(pass.expiry_at)) {
@@ -153,8 +168,8 @@ async function validatePass(req, res) {
 
         res.json({ valid: true, pass });
     } catch (err) {
-        console.error('Validate pass error:', err);
-        res.status(500).json({ error: 'Failed to validate pass' });
+        console.error('Validation Error:', err);
+        res.status(500).json({ valid: false, error: 'Internal server error' });
     }
 }
 
@@ -181,14 +196,18 @@ async function approvePass(req, res) {
         }
 
         if (pass.status === 'approved') {
-            return res.status(409).json({ error: 'Pass already approved' });
+            return res.status(400).json({ error: 'Pass already approved' });
         }
 
+        // Use transaction for atomic approval and logging
         const client = await db.getClient();
         try {
             await client.query('BEGIN');
-
-            await client.query('UPDATE passes SET status = $1 WHERE id = $2', ['approved', pass.id]);
+            
+            const updateResult = await client.query(
+                'UPDATE passes SET status = $1 WHERE id = $2 RETURNING *',
+                ['approved', pass.id]
+            );
 
             const logResult = await client.query(
                 `INSERT INTO guard_logs (pass_id, guard_mobile, visitor_name, visitor_mobile, resident_name, service_name, house_number, society_name)
@@ -200,12 +219,7 @@ async function approvePass(req, res) {
             );
 
             await client.query('COMMIT');
-
-            res.json({
-                message: 'Entry approved',
-                log_id: logResult.rows[0].id,
-                timestamp: new Date().toISOString()
-            });
+            res.json({ success: true, pass: updateResult.rows[0], logId: logResult.rows[0].id });
         } catch (err) {
             await client.query('ROLLBACK');
             throw err;
@@ -213,8 +227,8 @@ async function approvePass(req, res) {
             client.release();
         }
     } catch (err) {
-        console.error('Approve pass error:', err);
-        res.status(500).json({ error: 'Failed to approve pass and generate log' });
+        console.error('Approval Error:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }
 
@@ -235,16 +249,22 @@ async function denyPass(req, res) {
         }
 
         if (pass.status === 'approved') {
-            return res.status(409).json({ error: 'Cannot deny an already approved pass' });
+            return res.status(400).json({ error: 'Cannot deny an already approved pass' });
         }
 
         await db.query('DELETE FROM passes WHERE id = $1', [pass.id]);
-
-        res.json({ message: 'Pass denied and deleted successfully' });
+        res.json({ success: true, message: 'Pass denied and removed' });
     } catch (err) {
-        console.error('Deny pass error:', err);
-        res.status(500).json({ error: 'Failed to deny pass' });
+        console.error('Denial Error:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }
 
-module.exports = { createPass, getResidentPasses, getVisitorPasses, validatePass, approvePass, denyPass };
+module.exports = {
+    createPass,
+    getResidentPasses,
+    getVisitorPasses,
+    validatePass,
+    approvePass,
+    denyPass
+};

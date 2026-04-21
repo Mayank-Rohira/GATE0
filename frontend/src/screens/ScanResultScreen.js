@@ -27,12 +27,14 @@ export default function ScanResultScreen({ navigation, route }) {
         setLoading(true);
         try {
             const token = await getToken();
+            console.log('[SCAN_RESULT] Validating pass_code:', passData.id);
             const res = await fetch(`${API_BASE}/passes/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ pass_code: passData.id }),
             });
             const data = await res.json();
+            console.log('[SCAN_RESULT] API Response:', data);
             if (res.ok) {
                 setFullPass(data.pass);
                 setStatus(data.pass.status);

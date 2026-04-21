@@ -5,7 +5,7 @@ const SECRET_KEY = "GATE0_SECURE_TOKEN_2026";
  */
 const Base64 = {
     atob: (input = '') => {
-        let str = String(input).replace(/[=]+$/, '');
+        let str = String(input).trim().replace(/[=]+$/, '');
         let output = '';
         if (str.length % 4 === 1) {
             throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
@@ -68,16 +68,19 @@ export const decryptPassData = (encryptedString) => {
             // Support legacy optimized formats if scanned
             payload = encryptedString.split(':').pop();
         } else {
-            // Raw JSON fallback
+            console.log('[CRYPTO] Raw JSON detected, parsing...');
             return JSON.parse(encryptedString);
         }
         
+        console.log('[CRYPTO] Encrypted payload extracted:', payload.substring(0, 20) + '...');
         const decoded = Base64.atob(payload);
         
         let result = '';
         for (let i = 0; i < decoded.length; i++) {
             result += String.fromCharCode(decoded.charCodeAt(i) ^ SECRET_KEY.charCodeAt(i % SECRET_KEY.length));
         }
+        
+        console.log('[CRYPTO] Decrypted result:', result.substring(0, 50) + '...');
         
         try {
             const parsed = JSON.parse(result);

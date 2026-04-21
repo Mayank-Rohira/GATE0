@@ -98,10 +98,13 @@ export default function ScannerScreen({ navigation }) {
                 if (parsedData && (parsedData.id || parsedData.pass_code)) {
                     // Normalize standard pass data
                     let code = String(parsedData.id || parsedData.pass_code || '').trim();
+                    console.log('[SCANNER] Detected Code before normalization:', code);
+                    
                     if (!code.toUpperCase().startsWith('PASS_')) {
                         code = `PASS_${code}`;
                     }
                     const passToNavigate = { ...parsedData, id: code.toUpperCase() };
+                    console.log('[SCANNER] Navigating with ID:', passToNavigate.id);
                     navigation.navigate('ScanResult', { passData: passToNavigate });
                     return;
                 }

@@ -6,6 +6,13 @@ const dbUrl = (process.env.DATABASE_URL || '').trim();
 
 if (!dbUrl) {
   console.error('❌ CRITICAL: DATABASE_URL is missing in environment variables.');
+} else {
+  try {
+    const host = new URL(dbUrl).hostname;
+    console.log(`ℹ️ Database Connection: Connecting to ${host.substring(0, 5)}...`);
+  } catch (e) {
+    console.log('ℹ️ Database Connection: Using custom connection string');
+  }
 }
 
 const dbConfig = {

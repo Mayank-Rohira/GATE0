@@ -125,12 +125,12 @@ export default function CreatePassScreen({ navigation }) {
                             <QRCode
                                 value={encryptPassData({
                                     id: createdPass.pass_code,
-                                    visitor_name: createdPass.pass.visitor_name,
-                                    visitor_mobile: createdPass.pass.visitor_mobile,
-                                    service_name: createdPass.pass.service_name,
-                                    resident_name: createdPass.pass.resident_name || 'Resident',
-                                    house_number: createdPass.pass.house_number,
-                                    society_name: createdPass.pass.society_name,
+                                    visitor_name: createdPass.visitor_name,
+                                    visitor_mobile: createdPass.visitor_mobile,
+                                    service_name: createdPass.service_name,
+                                    resident_name: createdPass.resident_name || 'Resident',
+                                    house_number: createdPass.house_number,
+                                    society_name: createdPass.society_name,
                                     status: 'pending'
                                 })}
                                 size={260}
