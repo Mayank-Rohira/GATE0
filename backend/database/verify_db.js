@@ -32,7 +32,8 @@ async function verifyDatabase() {
       console.log('👉 Please ensure you have run the schema.sql in your Supabase SQL Editor.');
     }
   } catch (err) {
-    console.error('❌ Database connection failed!');
+    console.error('❌ DATABASE CONNECTION FAILED! THE SYSTEM IS RUNNING IN AMNESIC FALLBACK MODE.');
+    console.error('⚠️ ALL DATA WILL BE LOST ON RESTART. CHECK YOUR DATABASE_URL.');
     console.error(`Reason: ${err.message}`);
     if (err.message.includes('SSL')) {
       console.log('👉 Tip: Check if sslmode=require is set in your DATABASE_URL.');

@@ -125,11 +125,17 @@ async function getVisitorPasses(mobile) {
 async function getPassByCode(passCode) {
   try {
     const passResult = await withTimeout(
-      db.query('SELECT * FROM passes WHERE TRIM(UPPER(pass_code)) = $1 LIMIT 1', [passCode]),
+      db.query(
+        "SELECT * FROM passes WHERE REGEXP_REPLACE(UPPER(pass_code), '[^A-Z0-9]', '', 'g') = REGEXP_REPLACE(UPPER($1), '[^A-Z0-9]', '', 'g') LIMIT 1",
+        [passCode]
+      ),
       'getPassByCode.pass'
     );
     const pass = passResult.rows[0];
-    if (!pass) return null;
+    if (!pass) {
+      console.warn(`[DB_QUERY_EMPTY] No pass found for sanitized code: ${passCode}`);
+      return null;
+    }
 
     const residentResult = await withTimeout(
       db.query('SELECT name FROM users WHERE mobile = $1 LIMIT 1', [pass.resident_mobile]),
@@ -152,7 +158,10 @@ async function approvePass(passCode, guardMobile) {
     try {
       await withTimeout(client.query('BEGIN'), 'approvePass.begin');
       const passResult = await withTimeout(
-        client.query('SELECT * FROM passes WHERE TRIM(UPPER(pass_code)) = $1 LIMIT 1', [passCode]),
+        client.query(
+          "SELECT * FROM passes WHERE REGEXP_REPLACE(UPPER(pass_code), '[^A-Z0-9]', '', 'g') = REGEXP_REPLACE(UPPER($1), '[^A-Z0-9]', '', 'g') LIMIT 1",
+          [passCode]
+        ),
         'approvePass.pass'
       );
       const pass = passResult.rows[0];

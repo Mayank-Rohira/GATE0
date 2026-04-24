@@ -108,7 +108,9 @@ async function getVisitorPasses(mobile) {
 
 async function getPassByCode(passCode) {
   const store = await readStore();
-  const pass = store.passes.find((entry) => entry.pass_code === passCode);
+  const sanitize = (s) => String(s || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+  const searchCode = sanitize(passCode);
+  const pass = store.passes.find((entry) => sanitize(entry.pass_code) === searchCode);
   if (!pass) return null;
 
   return clone({
@@ -120,7 +122,9 @@ async function getPassByCode(passCode) {
 async function approvePass(passCode, guardMobile) {
   return withLock(async () => {
     const store = await readStore();
-    const pass = store.passes.find((entry) => entry.pass_code === passCode);
+    const sanitize = (s) => String(s || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+    const searchCode = sanitize(passCode);
+    const pass = store.passes.find((entry) => sanitize(entry.pass_code) === searchCode);
     if (!pass) return null;
 
     pass.status = 'approved';
