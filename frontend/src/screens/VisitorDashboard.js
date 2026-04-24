@@ -43,7 +43,8 @@ export default function VisitorDashboard({ navigation }) {
     const [passes, setPasses] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
     const [user, setUserData] = useState(null);
-    const [selectedPass, setSelectedPass] = useState(null);
+    const [selectedPassId, setSelectedPassId] = useState(null);
+    const selectedPass = passes.find(p => p.id === selectedPassId);
     const isFocused = useIsFocused();
 
     useEffect(() => {
@@ -74,18 +75,11 @@ export default function VisitorDashboard({ navigation }) {
             const data = await res.json();
             if (data && Array.isArray(data.passes)) {
                 setPasses(data.passes);
-                // Update selected pass if it exists in the new list to show latest status
-                if (selectedPass) {
-                    const updated = data.passes.find(p => p.id === selectedPass.id);
-                    if (updated) setSelectedPass(updated);
-                    // Note: If pass is deleted (e.g. Denied), we keep the modal open with stale data 
-                    // until the user closes it manually to avoid sudden disappearance.
-                }
             }
         } catch (err) {
             console.error('[VISITOR_POLL] Sync error:', err.message);
         }
-    }, [selectedPass]);
+    }, []);
 
     usePolling(fetchPasses, 3000, isFocused);
 
@@ -171,7 +165,7 @@ export default function VisitorDashboard({ navigation }) {
                                 pass={item} 
                                 variant="visitor" 
                                 onPress={() => {
-                                    setSelectedPass(item);
+                                    setSelectedPassId(item.id);
                                 }} 
                             />
                         )}
@@ -192,15 +186,15 @@ export default function VisitorDashboard({ navigation }) {
 
             {!!selectedPass && (
                 <Modal
-                    visible={!!selectedPass}
+                    visible={!!selectedPassId}
                     transparent={true}
                     animationType="slide"
-                    onRequestClose={() => setSelectedPass(null)}
+                    onRequestClose={() => setSelectedPassId(null)}
                 >
                     <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'flex-end' }}>
                         <TouchableOpacity 
                             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                            onPress={() => setSelectedPass(null)}
+                            onPress={() => setSelectedPassId(null)}
                         />
                         
                         <View style={{ 
@@ -220,7 +214,7 @@ export default function VisitorDashboard({ navigation }) {
                                     <Text selectable={true} style={{ fontSize: 12, color: COLORS.text.muted, fontWeight: '700', marginTop: 4, letterSpacing: 3 }}>{selectedPass?.pass_code}</Text>
                                 </View>
                                 <TouchableOpacity 
-                                    onPress={() => setSelectedPass(null)}
+                                    onPress={() => setSelectedPassId(null)}
                                     style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.background.surface, alignItems: 'center', justifyContent: 'center' }}
                                 >
                                     <X size={22} color={COLORS.text.primary} />
@@ -298,7 +292,7 @@ export default function VisitorDashboard({ navigation }) {
                             <View style={{ marginTop: 'auto', flexDirection: 'row', gap: 12 }}>
                                 <TouchableOpacity 
                                     style={{ flex: 1, height: 56, backgroundColor: COLORS.background.card, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', borderWidth: 1, borderColor: COLORS.border.subtle }}
-                                    onPress={() => setSelectedPass(null)}
+                                    onPress={() => setSelectedPassId(null)}
                                 >
                                     <Text style={{ color: COLORS.text.primary, fontWeight: '700', fontSize: 15, fontFamily: 'Montserrat' }}>Close</Text>
                                 </TouchableOpacity>
