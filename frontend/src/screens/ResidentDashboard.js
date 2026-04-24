@@ -64,6 +64,7 @@ export default function ResidentDashboard({ navigation }) {
     const [user, setUserData] = useState(null);
     const [notifications, setNotifications] = useState([]);
     const [hasUnread, setHasUnread] = useState(false);
+    const [logs, setLogs] = useState([]);
     const [filterPeriod, setFilterPeriod] = useState('All');
     const notificationsSheetRef = useRef(null);
     const snapPoints = useMemo(() => ['50%'], []);
@@ -84,39 +85,41 @@ export default function ResidentDashboard({ navigation }) {
             const u = await getUser();
             if (!token || !u) return;
 
-            const res = await fetch(`${API_BASE}/passes/resident/${u.mobile}?ts=${Date.now()}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Cache-Control': 'no-cache',
-                    Pragma: 'no-cache'
-                },
-                cache: 'no-store',
+            // Fetch Passes
+            const passRes = await fetch(`${API_BASE}/passes/resident/${u.mobile}?ts=${Date.now()}`, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            const data = await res.json();
-            if (data.passes) {
-                const currentPasses = data.passes;
-                setPasses(currentPasses);
-
+            const passData = await passRes.json();
+            if (passData.passes) {
+                setPasses(passData.passes);
+                
                 // Notification Logic
-                const approved = currentPasses.filter(p => p.status === 'approved');
+                const approved = passData.passes.filter(p => p.status === 'approved');
                 if (!hasHydratedApprovedCount.current) {
                     prevApprovedCount.current = approved.length;
                     hasHydratedApprovedCount.current = true;
                 } else if (approved.length > prevApprovedCount.current) {
                     const newApproved = approved[approved.length - 1];
-                    const newNote = {
+                    setNotifications(prev => [{
                         id: Date.now(),
                         title: 'Pass Approved',
                         body: `Your pass for ${newApproved.visitor_name} has been approved.`,
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    };
-                    setNotifications(prev => [newNote, ...prev]);
+                    }, ...prev]);
                     setHasUnread(true);
                     prevApprovedCount.current = approved.length;
                 }
             }
+
+            // Fetch Arrival Logs
+            const logRes = await fetch(`${API_BASE}/logs/resident/${u.mobile}?limit=5`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const logData = await logRes.json();
+            if (logData.logs) setLogs(logData.logs);
+
         } catch (err) {
-            // silent fail on poll
+            console.error('[RESIDENT_POLL] Sync error:', err.message);
         }
     }, []);
 
@@ -241,24 +244,46 @@ export default function ResidentDashboard({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            {/* Pass List */}
-            {sorted.length === 0 ? (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 40, paddingHorizontal: 40 }}>
-                    <Text style={{ fontSize: 20, fontWeight: '800', color: COLORS.text.primary, marginBottom: 12, textAlign: 'center' }}>No Passes Found</Text>
-                    <Text style={{ fontSize: 15, color: COLORS.text.secondary, textAlign: 'center', lineHeight: 22 }}>You don't have any active passes. Generate a new QR code to invite visitors.</Text>
+            {/* Activity List */}
+            <ScrollView 
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.accent.primary} />}
+                contentContainerStyle={{ paddingBottom: 120 }}
+            >
+                {/* Passes Section */}
+                <View style={{ paddingHorizontal: 16 }}>
+                    {sorted.length > 0 ? (
+                        sorted.map(item => <PassCard key={item.id} pass={item} variant="resident" />)
+                    ) : (
+                        <View style={{ padding: 40, alignItems: 'center' }}>
+                            <Text style={{ color: COLORS.text.muted, fontSize: 14 }}>No passes found</Text>
+                        </View>
+                    )}
                 </View>
-            ) : (
-                <FlatList
-                    data={sorted}
-                    keyExtractor={(item) => String(item.id)}
-                    renderItem={({ item }) => <PassCard pass={item} variant="resident" onPress={() => {}} />}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.accent.primary} />
-                    }
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
-                />
-            )}
+
+                {/* Arrivals Section */}
+                {logs.length > 0 && (
+                    <View style={{ marginTop: 24, paddingHorizontal: 16 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 2.5, color: COLORS.text.muted, marginBottom: 16, marginLeft: 8 }}>
+                            Arrival History
+                        </Text>
+                        {logs.map(log => (
+                            <View key={log.id} style={{ backgroundColor: COLORS.background.surface, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border.subtle, flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: log.status === 'denied' ? 'rgba(238, 125, 119, 0.1)' : 'rgba(166, 227, 161, 0.1)', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                                    <Text style={{ fontSize: 10, fontWeight: '800', color: log.status === 'denied' ? COLORS.status.error : COLORS.status.success }}>{log.status === 'denied' ? 'X' : '✓'}</Text>
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{ color: COLORS.text.primary, fontWeight: '700', fontSize: 15 }}>{log.visitor_name}</Text>
+                                    <Text style={{ color: COLORS.text.muted, fontSize: 12 }}>{log.service_name} • {log.time}</Text>
+                                </View>
+                                <View style={{ alignItems: 'flex-end' }}>
+                                    <Text style={{ color: COLORS.text.muted, fontSize: 10, fontWeight: '700' }}>{log.date}</Text>
+                                    <Text style={{ color: log.status === 'denied' ? COLORS.status.error : COLORS.status.success, fontSize: 9, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 }}>{log.status}</Text>
+                                </View>
+                            </View>
+                        ))}
+                    </View>
+                )}
+            </ScrollView>
 
             {/* Floating Action Button */}
             <RNAnimated.View style={{

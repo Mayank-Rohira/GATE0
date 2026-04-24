@@ -40,4 +40,8 @@ yarn-error.*
 .env.*.local
 *.pem
 
+#Local Testing Database
+local_data.json
+
+#Todo List
 todo.md

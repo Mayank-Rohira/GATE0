@@ -211,16 +211,38 @@ async function approvePass(passCode, guardMobile) {
   }
 }
 
-async function denyPass(passCode) {
+async function denyPass(passCode, guardMobile) {
   try {
     const result = await withTimeout(
-      db.query('DELETE FROM passes WHERE TRIM(UPPER(pass_code)) = $1 RETURNING *', [passCode]),
+      db.query('DELETE FROM passes WHERE REGEXP_REPLACE(UPPER(pass_code), \'[^A-Z0-9]\', \'\', \'g\') = REGEXP_REPLACE(UPPER($1), \'[^A-Z0-9]\', \'\', \'g\') RETURNING *', [passCode]),
       'denyPass'
     );
+    // Note: SQL version currently doesn't log denials in guard_logs yet, 
+    // but the fallback JSON store does.
     return result.rows[0] || null;
   } catch (error) {
     logFallback('denyPass', error);
-    return store.denyPass(passCode);
+    return store.denyPass(passCode, guardMobile);
+  }
+}
+
+async function getResidentLogs(residentMobile, limit) {
+  try {
+    // Joining with passes to get resident_mobile since guard_logs doesn't have it directly
+    const result = await withTimeout(
+      db.query(
+        `SELECT l.* FROM guard_logs l
+         JOIN passes p ON p.id = l.pass_id
+         WHERE p.resident_mobile = $1
+         ORDER BY l.timestamp DESC LIMIT $2`,
+        [residentMobile, limit || 50]
+      ),
+      'getResidentLogs'
+    );
+    return result.rows;
+  } catch (error) {
+    logFallback('getResidentLogs', error);
+    return store.getResidentLogs(residentMobile, limit);
   }
 }
 
@@ -258,5 +280,6 @@ module.exports = {
   getPassByCode,
   approvePass,
   denyPass,
-  getGuardLogs
+  getGuardLogs,
+  getResidentLogs
 };

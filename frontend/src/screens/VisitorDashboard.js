@@ -82,7 +82,9 @@ export default function VisitorDashboard({ navigation }) {
                     // until the user closes it manually to avoid sudden disappearance.
                 }
             }
-        } catch (err) { }
+        } catch (err) {
+            console.error('[VISITOR_POLL] Sync error:', err.message);
+        }
     }, [selectedPass]);
 
     usePolling(fetchPasses, 3000, isFocused);

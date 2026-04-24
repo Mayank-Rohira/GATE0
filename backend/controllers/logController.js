@@ -38,4 +38,34 @@ function formatTime(timestamp) {
     });
 }
 
-module.exports = { getGuardLogs };
+async function getResidentLogs(req, res) {
+    const residentMobile = req.params.resident_mobile;
+
+    if (residentMobile !== req.user.mobile) {
+        return res.status(403).json({ error: 'Cannot view other resident activity' });
+    }
+
+    const { limit } = req.query;
+    const maxResults = parseInt(limit, 10) || 50;
+
+    try {
+        const logs = await repository.getResidentLogs(residentMobile, maxResults);
+
+        const formatted = logs.map(log => {
+            const timestamp = log.timestamp ? new Date(log.timestamp) : null;
+            const isValid = timestamp && !isNaN(timestamp.getTime());
+            return {
+                ...log,
+                date: isValid ? timestamp.toISOString().split('T')[0] : null,
+                time: isValid ? formatTime(timestamp) : null
+            };
+        });
+
+        res.json({ logs: formatted });
+    } catch (err) {
+        console.error('Get resident logs error:', err);
+        res.status(500).json({ error: 'Failed to fetch activity logs' });
+    }
+}
+
+module.exports = { getGuardLogs, getResidentLogs };

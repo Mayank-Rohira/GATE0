@@ -216,7 +216,7 @@ async function denyPass(req, res) {
             return res.status(400).json({ error: 'Cannot deny an already approved pass' });
         }
 
-        await repository.denyPass(normalizedCode);
+        await repository.denyPass(normalizedCode, req.user.mobile);
         res.json({ success: true, message: 'Pass denied and removed' });
     } catch (err) {
         console.error('Denial Error:', err);

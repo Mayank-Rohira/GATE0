@@ -28,7 +28,9 @@ export default function LogsScreen() {
             });
             const data = await res.json();
             if (data.logs) setLogs(data.logs);
-        } catch (err) { }
+        } catch (err) {
+            console.error('[LOGS_FETCH] Error:', err.message);
+        }
     }, []);
 
     usePolling(fetchLogs);
@@ -83,19 +85,22 @@ export default function LogsScreen() {
     }, [logs, activeFilter, searchQuery]);
 
     const exportToCSV = async () => {
-        if (filteredLogs.length === 0) return;
+        if (filteredLogs.length === 0) {
+            alert('No logs available to export.');
+            return;
+        }
         
         try {
             const headers = ['Date', 'Time', 'Visitor Name', 'Visitor Mobile', 'Service', 'Resident', 'House', 'Residency'];
             const rows = filteredLogs.map(log => [
-                `"${log.date || ''}"`,
-                `"${log.time || ''}"`,
-                `"${log.visitor_name || ''}"`,
-                `"${log.visitor_mobile || ''}"`,
-                `"${log.service_name || ''}"`,
-                `"${log.resident_name || ''}"`,
-                `"${log.house_number || ''}"`,
-                `"${log.society_name || ''}"`
+                `"${log.date || 'N/A'}"`,
+                `"${log.time || 'N/A'}"`,
+                `"${log.visitor_name || 'Unknown'}"`,
+                `"${log.visitor_mobile || 'N/A'}"`,
+                `"${log.service_name || 'Visitor'}"`,
+                `"${log.resident_name || 'Resident'}"`,
+                `"${log.house_number || '?'}"`,
+                `"${log.society_name || '?'}"`
             ].join(','));
             
             // Remove BOM (\uFEFF) as it can cause "UTF-8" errors on some mobile OS/Apps

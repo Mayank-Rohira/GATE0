@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS guard_logs (
   service_name   TEXT,
   house_number   TEXT NOT NULL,
   society_name   TEXT NOT NULL,
+  status         TEXT NOT NULL DEFAULT 'approved' CHECK(status IN ('approved', 'denied')),
   timestamp      TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 

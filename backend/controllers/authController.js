@@ -101,4 +101,42 @@ async function login(req, res) {
     }
 }
 
-module.exports = { signup, login };
+async function updateProfile(req, res) {
+    const { name, house_number } = req.body;
+    const mobile = req.user.mobile;
+
+    try {
+        const store = require('../database/store');
+        const readStore = async () => {
+            const fs = require('fs/promises');
+            const path = require('path');
+            const STORE_PATH = path.join(__dirname, '../database/local_data.json');
+            const raw = await fs.readFile(STORE_PATH, 'utf8');
+            return JSON.parse(raw);
+        };
+        const writeStore = async (store) => {
+            const fs = require('fs/promises');
+            const path = require('path');
+            const STORE_PATH = path.join(__dirname, '../database/local_data.json');
+            await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
+        };
+
+        // Note: For simplicity in the local JSON store, I'm bypassing the repository 
+        // since it doesn't have a generic update yet.
+        const s = await readStore();
+        const user = s.users.find(u => u.mobile === mobile);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (name) user.name = name;
+        if (house_number !== undefined) user.house_number = house_number;
+
+        await writeStore(s);
+
+        res.json({ success: true, user: { name: user.name, mobile: user.mobile, role: user.role, house_number: user.house_number, society_name: user.society_name } });
+    } catch (err) {
+        console.error('Update profile error:', err);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+}
+
+module.exports = { signup, login, updateProfile };

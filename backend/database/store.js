@@ -140,6 +140,7 @@ async function approvePass(passCode, guardMobile) {
       service_name: pass.service_name,
       house_number: pass.house_number,
       society_name: pass.society_name,
+      status: 'approved',
       timestamp: new Date().toISOString()
     };
 
@@ -153,14 +154,35 @@ async function approvePass(passCode, guardMobile) {
   });
 }
 
-async function denyPass(passCode) {
+async function denyPass(passCode, guardMobile) {
   return withLock(async () => {
     const store = await readStore();
-    const index = store.passes.findIndex((entry) => entry.pass_code === passCode);
+    const sanitize = (s) => String(s || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+    const searchCode = sanitize(passCode);
+    const index = store.passes.findIndex((entry) => sanitize(entry.pass_code) === searchCode);
     if (index === -1) return null;
-    const [removed] = store.passes.splice(index, 1);
+    
+    const [pass] = store.passes.splice(index, 1);
+    
+    // Log the denial
+    const residentName = store.users.find((user) => user.mobile === pass.resident_mobile)?.name || 'Resident';
+    const log = {
+      id: store.counters.guard_logs++,
+      pass_id: pass.id,
+      guard_mobile: guardMobile || 'SYSTEM',
+      visitor_name: pass.visitor_name,
+      visitor_mobile: pass.visitor_mobile,
+      resident_name: residentName,
+      service_name: pass.service_name,
+      house_number: pass.house_number,
+      society_name: pass.society_name,
+      status: 'denied',
+      timestamp: new Date().toISOString()
+    };
+    store.guard_logs.push(log);
+    
     await writeStore(store);
-    return clone(removed);
+    return clone(pass);
   });
 }
 
@@ -177,6 +199,26 @@ async function getGuardLogs(guardMobile, date, limit) {
   return clone(filtered);
 }
 
+async function getResidentLogs(residentMobile, limit) {
+  const store = await readStore();
+  const maxResults = limit || 50;
+
+  const filtered = store.guard_logs
+    .filter((log) => {
+        // Find the pass to get resident mobile, or rely on resident_name if we don't have mobile in logs
+        // Actually, logs SHOULD have resident_mobile but they don't in current schema.
+        // I'll check resident_name mapping or assume house_number + society_name match for now, 
+        // but better to fix log schema.
+        // Wait, pass_id is there.
+        const pass = store.passes.find(p => p.id === log.pass_id) || {};
+        return pass.resident_mobile === residentMobile;
+    })
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, maxResults);
+
+  return clone(filtered);
+}
+
 module.exports = {
   findUserByMobile,
   createUser,
@@ -187,5 +229,6 @@ module.exports = {
   getPassByCode,
   approvePass,
   denyPass,
-  getGuardLogs
+  getGuardLogs,
+  getResidentLogs
 };
