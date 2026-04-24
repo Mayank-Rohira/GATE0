@@ -12,6 +12,36 @@ function normalizePassCode(value) {
     return normalized.startsWith('PASS_') ? normalized : `PASS_${normalized}`;
 }
 
+async function getPassByCode(passCode) {
+    const passResult = await db.query(
+        'SELECT * FROM passes WHERE TRIM(UPPER(pass_code)) = $1',
+        [passCode]
+    );
+
+    const pass = passResult.rows[0];
+    if (!pass) {
+        return null;
+    }
+
+    let residentName = 'Resident';
+    try {
+        const residentResult = await db.query(
+            'SELECT name FROM users WHERE mobile = $1 LIMIT 1',
+            [pass.resident_mobile]
+        );
+        if (residentResult.rows[0]?.name) {
+            residentName = residentResult.rows[0].name;
+        }
+    } catch (error) {
+        console.warn(`[RESIDENT_LOOKUP_FAILURE] pass_code="${passCode}"`, error.message);
+    }
+
+    return {
+        ...pass,
+        resident_name: residentName
+    };
+}
+
 async function createPass(req, res) {
     const { service_name, visitor_name, visitor_mobile: rawMobile, category = 'guest', expected_time = null } = req.body;
     const visitor_mobile = normalizeMobile(rawMobile);
@@ -152,15 +182,7 @@ async function validatePass(req, res) {
         const normalizedCode = normalizePassCode(pass_code);
         console.log(`[VALIDATION] Original: "${pass_code}" | Sanitized: "${normalizedCode}" | Length: ${normalizedCode.length}`);
 
-        const result = await db.query(
-            `SELECT p.*, u.name AS resident_name
-       FROM passes p
-       LEFT JOIN users u ON u.mobile = p.resident_mobile
-       WHERE TRIM(UPPER(p.pass_code)) = $1`,
-            [normalizedCode]
-        );
-        
-        const pass = result.rows[0];
+        const pass = await getPassByCode(normalizedCode);
 
         if (!pass) {
             console.warn(`[VALIDATION_FAILURE] Pass not found: "${normalizedCode}"`);
@@ -191,14 +213,7 @@ async function approvePass(req, res) {
 
     try {
         const normalizedCode = normalizePassCode(pass_code);
-        const result = await db.query(
-            `SELECT p.*, u.name AS resident_name
-       FROM passes p
-       LEFT JOIN users u ON u.mobile = p.resident_mobile
-       WHERE TRIM(UPPER(p.pass_code)) = $1`,
-            [normalizedCode]
-        );
-        const pass = result.rows[0];
+        const pass = await getPassByCode(normalizedCode);
 
         if (!pass) {
             return res.status(404).json({ error: 'Pass not found' });

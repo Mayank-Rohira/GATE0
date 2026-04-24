@@ -63,6 +63,7 @@ export default function ScannerScreen({ navigation }) {
     useEffect(() => {
         if (isFocused) { 
             setScanned(false);
+            setIsVerifying(false);
             setScanError(null);
             flashOpacity.value = 0;
         }
@@ -90,6 +91,7 @@ export default function ScannerScreen({ navigation }) {
                     const passCode = String(parsedData.pass_code).trim().toUpperCase();
                     const passToNavigate = { ...parsedData, id: passCode, pass_code: passCode };
                     console.log('[SCANNER] Navigating with pass_code:', passToNavigate.pass_code);
+                    setIsVerifying(false);
                     navigation.navigate('ScanResult', { passData: passToNavigate });
                     return;
                 }
