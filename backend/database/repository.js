@@ -1,7 +1,7 @@
 const db = require('./db');
 const store = require('./store');
 
-const DB_TIMEOUT_MS = 2500;
+const DB_TIMEOUT_MS = 5000;
 
 function withTimeout(promise, label) {
   return Promise.race([
