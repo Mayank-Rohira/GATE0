@@ -1,7 +1,5 @@
 const { Pool } = require('pg');
 
-const net = require('net');
-
 const dbUrl = (process.env.DATABASE_URL || '').trim();
 
 if (!dbUrl) {

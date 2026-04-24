@@ -1,12 +1,11 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Pressable, FlatList, RefreshControl, Platform, StyleSheet } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Pressable, FlatList, RefreshControl, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, FileText, User, MapPin, Download } from 'lucide-react-native';
+import { Search, FileText, Download } from 'lucide-react-native';
 import { API_BASE } from '../config/api';
 import { getToken, getUser } from '../hooks/useAuth';
 import usePolling from '../hooks/usePolling';
 import { COLORS } from '../constants/colors';
-// import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
@@ -17,11 +16,6 @@ export default function LogsScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All');
-    // const [selectedLog, setSelectedLog] = useState(null);
-
-    // Removed BottomSheet ref as interaction is disabled
-    // const bottomSheetRef = useRef(null);
-    // const snapPoints = useMemo(() => ['70%'], []);
 
     const fetchLogs = useCallback(async () => {
         try {
@@ -45,28 +39,26 @@ export default function LogsScreen() {
         setRefreshing(false);
     };
 
-    const getStatusColor = (log) => {
-        if (log.status === 'denied') return COLORS.status.error;
-        if (log.status === 'pending') return COLORS.accent.secondary;
-        return COLORS.status.success;
-    };
+    const getStatusColor = () => COLORS.status.success;
 
     const getLogActionText = (log) => {
-        if (log.status === 'denied') return `Denied ${log.visitor_name}`;
-        return `Scanned ${log.service_name || log.visitor_name || 'Pass'}`;
+        return `Approved ${log.service_name || log.visitor_name || 'Pass'}`;
+    };
+
+    const parseTimestamp = (value) => {
+        if (!value) return null;
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
     };
 
     const isToday = (dateStr) => {
-        if (!dateStr) return false;
-        const d = new Date(dateStr.replace(' ', 'T') + 'Z');
-        if (isNaN(d.getTime())) return false; // Fallback
-        return d.toDateString() === new Date().toDateString();
+        const date = parseTimestamp(dateStr);
+        return date ? date.toDateString() === new Date().toDateString() : false;
     };
 
     const isThisWeek = (dateStr) => {
-        if (!dateStr) return true; // Fallback to all
-        const d = new Date(dateStr.replace(' ', 'T') + 'Z');
-        if (isNaN(d.getTime())) return true;
+        const d = parseTimestamp(dateStr);
+        if (!d) return false;
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         return d > weekAgo;
     };
@@ -89,19 +81,6 @@ export default function LogsScreen() {
         }
         return result;
     }, [logs, activeFilter, searchQuery]);
-
-    const getInitials = (name) => {
-        if (!name) return 'U';
-        const parts = name.split(' ');
-        if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
-        return name.substring(0, 2).toUpperCase();
-    };
-
-    // handleLogPress is no longer needed
-    // const handleLogPress = (log) => {
-    //     setSelectedLog(log);
-    //     bottomSheetRef.current?.snapToIndex(0);
-    // };
 
     const exportToCSV = async () => {
         if (filteredLogs.length === 0) return;
@@ -129,6 +108,7 @@ export default function LogsScreen() {
                 a.href = url;
                 a.download = `gate0_logs_export.csv`;
                 a.click();
+                window.URL.revokeObjectURL(url);
             } else {
                 const fileName = `gate0_logs_${Date.now()}.csv`;
                 const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
@@ -153,10 +133,6 @@ export default function LogsScreen() {
             alert(`Export failed: ${error.message}`);
         }
     };
-
-    const renderBackdrop = useCallback((props) => (
-        <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.6} />
-    ), []);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.background.primary }} edges={['top']}>
@@ -285,22 +261,6 @@ export default function LogsScreen() {
                 )}
 
             </View>
-
-            {/* Log Detail Bottom Sheet removed as per request */}
         </SafeAreaView>
-    );
-}
-
-// LogDetailItem kept for potential reuse/reference but not currently used in LogsScreen
-
-function LogDetailItem({ icon, label, value, isLast = false }) {
-    return (
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: isLast ? 0 : 20 }}>
-            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.background.primary, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>{icon}</View>
-            <View>
-                <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>{label}</Text>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text.primary }}>{value}</Text>
-            </View>
-        </View>
     );
 }

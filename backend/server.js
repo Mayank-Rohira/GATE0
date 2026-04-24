@@ -3,7 +3,6 @@ require('dns').setDefaultResultOrder('ipv4first');
 
 const express = require('express');
 const cors = require('cors');
-const db = require('./database/db');
 const verifyDatabase = require('./database/verify_db');
 
 const app = express();

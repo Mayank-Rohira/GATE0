@@ -7,7 +7,6 @@ import usePolling from '../hooks/usePolling';
 import PassCard from '../components/PassCard';
 import { Bell, Plus } from 'lucide-react-native';
 import { COLORS } from '../constants/colors';
-import { NeonButton } from '../components/ui/neon-button';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 
@@ -68,6 +67,7 @@ export default function ResidentDashboard({ navigation }) {
     const notificationsSheetRef = useRef(null);
     const snapPoints = useMemo(() => ['50%'], []);
     const prevApprovedCount = useRef(0);
+    const hasHydratedApprovedCount = useRef(false);
 
     const initUser = async () => {
         const u = await getUser();
@@ -92,7 +92,10 @@ export default function ResidentDashboard({ navigation }) {
 
                 // Notification Logic
                 const approved = currentPasses.filter(p => p.status === 'approved');
-                if (approved.length > prevApprovedCount.current) {
+                if (!hasHydratedApprovedCount.current) {
+                    prevApprovedCount.current = approved.length;
+                    hasHydratedApprovedCount.current = true;
+                } else if (approved.length > prevApprovedCount.current) {
                     const newApproved = approved[approved.length - 1];
                     const newNote = {
                         id: Date.now(),
@@ -102,8 +105,8 @@ export default function ResidentDashboard({ navigation }) {
                     };
                     setNotifications(prev => [newNote, ...prev]);
                     setHasUnread(true);
+                    prevApprovedCount.current = approved.length;
                 }
-                prevApprovedCount.current = approved.length;
             }
         } catch (err) {
             // silent fail on poll

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -15,6 +16,7 @@ import ScanResultScreen from '../screens/ScanResultScreen';
 import LogsScreen from '../screens/LogsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { COLORS } from '../constants/colors';
+import { clearSession } from '../hooks/useAuth';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -23,9 +25,7 @@ function GuardTabNavigator() {
     return (
         <Tab.Navigator
             tabBar={(props) => {
-                const items = props.state.routes.map((route, index) => {
-                    const label = route.name === 'ResidentHome' ? 'Scanner' : route.name === 'VisitorHome' ? 'Logs' : route.name;
-                    // We use the actual route names from Tab.Screen to map to items
+                const items = props.state.routes.map((route) => {
                     let icon;
                     if (route.name === 'Scanner') icon = ScanLine;
                     else if (route.name === 'Logs') icon = FileText;
@@ -57,9 +57,41 @@ const GATE0_THEME = {
 };
 
 export default function AppNavigator() {
+    const [initialRoute, setInitialRoute] = useState(null);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function resetSessionOnLaunch() {
+            try {
+                await clearSession();
+                if (isMounted) {
+                    setInitialRoute('RoleSelect');
+                }
+            } catch (error) {
+                if (isMounted) {
+                    setInitialRoute('RoleSelect');
+                }
+            }
+        }
+
+        resetSessionOnLaunch();
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    if (!initialRoute) {
+        return (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.background.primary }}>
+                <ActivityIndicator color={COLORS.accent.primary} size="large" />
+            </View>
+        );
+    }
+
     return (
         <NavigationContainer theme={GATE0_THEME}>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="RoleSelect" component={RoleSelectScreen} />
                 <Stack.Screen name="Login" component={LoginScreen} />
                 <Stack.Screen name="Signup" component={SignupScreen} />

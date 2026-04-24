@@ -6,10 +6,10 @@ import { getToken } from '../hooks/useAuth';
 import { User, Phone, MapPin, Building2, Briefcase } from 'lucide-react-native';
 import { COLORS } from '../constants/colors';
 import { ButtonColorful } from '../components/ui/button-colorful';
-import { NeonButton } from '../components/ui/neon-button';
 
 export default function ScanResultScreen({ navigation, route }) {
     const { passData } = route.params;
+    const canonicalPassCode = (passData.pass_code || passData.id || '').trim().toUpperCase();
 
     const [actionState, setActionState] = useState(null); // 'approving', 'denying', null
     const [status, setStatus] = useState(passData.status || 'pending');
@@ -27,11 +27,11 @@ export default function ScanResultScreen({ navigation, route }) {
         setLoading(true);
         try {
             const token = await getToken();
-            console.log('[SCAN_RESULT] Validating pass_code:', passData.id);
+            console.log('[SCAN_RESULT] Validating pass_code:', canonicalPassCode);
             const res = await fetch(`${API_BASE}/passes/validate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ pass_code: passData.id }),
+                body: JSON.stringify({ pass_code: canonicalPassCode }),
             });
             const data = await res.json();
             console.log('[SCAN_RESULT] API Response:', data);
@@ -54,10 +54,11 @@ export default function ScanResultScreen({ navigation, route }) {
 
         try {
             const token = await getToken();
+            const passCode = (result.pass_code || canonicalPassCode).trim().toUpperCase();
             const res = await fetch(`${API_BASE}/passes/approve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ pass_code: result.id || passData.id }),
+                body: JSON.stringify({ pass_code: passCode }),
             });
 
             if (!res.ok) {
@@ -83,10 +84,11 @@ export default function ScanResultScreen({ navigation, route }) {
 
         try {
             const token = await getToken();
+            const passCode = (result.pass_code || canonicalPassCode).trim().toUpperCase();
             const res = await fetch(`${API_BASE}/passes/deny`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ pass_code: result.id }),
+                body: JSON.stringify({ pass_code: passCode }),
             });
 
             if (!res.ok) {
@@ -129,7 +131,7 @@ export default function ScanResultScreen({ navigation, route }) {
                     
                     {/* Terminal Data Header */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, borderBottomWidth: 1, borderBottomColor: COLORS.border.tactile, paddingBottom: 16 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, letterSpacing: 2, textTransform: 'uppercase' }}>UNIT_SCAN_LOG: {passData.id}</Text>
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: COLORS.text.muted, letterSpacing: 2, textTransform: 'uppercase' }}>UNIT_SCAN_LOG: {canonicalPassCode}</Text>
                     </View>
 
 

@@ -96,17 +96,7 @@ export default function VisitorDashboard({ navigation }) {
 
     const getQRContent = (pass) => {
         if (!pass) return "";
-        // Compressed V2 payload with full info restoration
-        return encryptPassData({ 
-            id: pass.pass_code,
-            visitor_name: pass.visitor_name,
-            visitor_mobile: pass.visitor_mobile,
-            service_name: pass.service_name,
-            resident_name: pass.resident_name || 'Resident',
-            house_number: pass.house_number,
-            society_name: pass.society_name,
-            status: pass.status
-        });
+        return encryptPassData(pass.pass_code);
     };
 
     return (

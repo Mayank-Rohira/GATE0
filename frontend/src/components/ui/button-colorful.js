@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Pressable, ActivityIndicator, Platform, View } from 'react-native';
+import { Text, Pressable, ActivityIndicator, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../../constants/colors';

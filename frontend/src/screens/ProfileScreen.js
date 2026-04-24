@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LogOut, RefreshCcw, HelpCircle, ChevronRight, ArrowLeft } from 'lucide-react-native';
+import { LogOut, ArrowLeft } from 'lucide-react-native';
 import { getUser, clearSession } from '../hooks/useAuth';
 import { COLORS } from '../constants/colors';
 
@@ -57,12 +57,6 @@ export default function ProfileScreen({ navigation }) {
         const parts = name.split(' ');
         if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
         return name.substring(0, 2).toUpperCase();
-    };
-
-    const ROLE_COLORS = {
-        resident: COLORS.accent.primary,
-        visitor: COLORS.accent.secondary,
-        guard: COLORS.status.success
     };
 
     return (
@@ -165,28 +159,5 @@ export default function ProfileScreen({ navigation }) {
 
             </View>
         </SafeAreaView>
-    );
-}
-
-function ProfileMenuItem({ icon, label }) {
-    return (
-        <TouchableOpacity 
-            style={{ 
-                flexDirection: 'row', 
-                alignItems: 'center', 
-                justifyContent: 'space-between', 
-                padding: 20, 
-                backgroundColor: COLORS.background.surface, 
-                borderRadius: 20 
-            }}
-        >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: COLORS.background.primary, alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
-                    {icon}
-                </View>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text.primary }}>{label}</Text>
-            </View>
-            <ChevronRight size={20} color={COLORS.text.muted} />
-        </TouchableOpacity>
     );
 }

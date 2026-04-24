@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { COLORS } from '../../constants/colors';
-import { ScanLine, ScrollText, User } from 'lucide-react-native';
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 

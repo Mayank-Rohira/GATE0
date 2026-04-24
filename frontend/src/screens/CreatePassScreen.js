@@ -1,9 +1,9 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Platform, KeyboardAvoidingView, ScrollView, Share } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Platform, KeyboardAvoidingView, ScrollView, Share, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
-import { ArrowLeft, Check, User, Phone, Share2, CheckCircle2, Car, ShoppingBag, Utensils, Package, Wrench, Users } from 'lucide-react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSpring } from 'react-native-reanimated';
+import { ArrowLeft, Check, User, Phone, CheckCircle2, Car, ShoppingBag, Utensils, Package, Wrench, Users } from 'lucide-react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
 
 import { encryptPassData } from '../utils/crypto';
 
@@ -11,8 +11,6 @@ import { API_BASE } from '../config/api';
 import { getToken } from '../hooks/useAuth';
 import { COLORS } from '../constants/colors';
 import { ButtonColorful } from '../components/ui/button-colorful';
-import { NeonButton } from '../components/ui/neon-button';
-import { Modal } from 'react-native';
 
 const SERVICES = [
     { label: 'Cabs', icon: Car },
@@ -123,16 +121,7 @@ export default function CreatePassScreen({ navigation }) {
                     }}>
                         <View style={{ backgroundColor: '#ffffff', padding: 12, borderRadius: 24, marginBottom: 24 }}>
                             <QRCode
-                                value={encryptPassData({
-                                    id: createdPass.pass_code,
-                                    visitor_name: createdPass.visitor_name,
-                                    visitor_mobile: createdPass.visitor_mobile,
-                                    service_name: createdPass.service_name,
-                                    resident_name: createdPass.resident_name || 'Resident',
-                                    house_number: createdPass.house_number,
-                                    society_name: createdPass.society_name,
-                                    status: 'pending'
-                                })}
+                                value={encryptPassData(createdPass.pass_code)}
                                 size={260}
                                 color="#000000"
                                 backgroundColor="#ffffff"

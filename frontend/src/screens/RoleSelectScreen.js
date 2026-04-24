@@ -6,7 +6,6 @@ import {
     Platform, 
     StyleSheet, 
     Dimensions, 
-    ScrollView, 
     StatusBar,
     Image,
 } from 'react-native';
@@ -20,25 +19,17 @@ import {
 import Animated, { 
     useSharedValue, 
     useAnimatedStyle, 
-    useAnimatedProps,
     withTiming, 
-    withDelay,
-    withRepeat,
-    withSequence,
     Easing,
     interpolate,
     interpolateColor,
     Extrapolation
 } from 'react-native-reanimated';
-import Svg, { Rect, G, Defs, LinearGradient, Stop, Ellipse, Circle } from 'react-native-svg';
 
 import { COLORS } from '../constants/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const APP_WIDTH = Math.min(SCREEN_WIDTH, 420);
-
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const ROLE_DATA = [
     { id: 'resident', label: 'Resident', icon: Home, description: 'Manage your household access' },
@@ -46,16 +37,11 @@ const ROLE_DATA = [
     { id: 'guard', label: 'Security', icon: Shield, description: 'Monitor and scan tokens' },
 ];
 
-const AnimatedView = Animated.createAnimatedComponent(View);
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 // --- Background Components ---
 
 function BackgroundRender({ progress }) {
-    // Holographic Reconstruction Reveal
-    // We simulate 4 'slices' of the image 'compiling' on screen
-    const slices = [0, 1, 2, 3];
-    
     return (
         <View style={styles.backgroundWrapper}>
             <Animated.View 

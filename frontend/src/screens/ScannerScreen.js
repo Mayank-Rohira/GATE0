@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, TextInput, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { ShieldAlert, Zap, Keyboard } from 'lucide-react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence, runOnJS } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence } from 'react-native-reanimated';
 import BottomSheet, { BottomSheetTextInput, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 
 import { COLORS } from '../constants/colors';
-import { NeonButton } from '../components/ui/neon-button';
 import { ButtonColorful } from '../components/ui/button-colorful';
-import { getUser } from '../hooks/useAuth';
 import { decryptPassData } from '../utils/crypto';
 
 function ScanLineAnimated({ scanned }) {
@@ -56,7 +54,6 @@ export default function ScannerScreen({ navigation }) {
     const [isVerifying, setIsVerifying] = useState(false);
     const [scanned, setScanned] = useState(false);
     const [scanError, setScanError] = useState(null);
-    const [userInitials, setUserInitials] = useState('GR');
     const isFocused = useIsFocused();
     
     const bottomSheetRef = useRef(null);
@@ -68,12 +65,6 @@ export default function ScannerScreen({ navigation }) {
             setScanned(false);
             setScanError(null);
             flashOpacity.value = 0;
-            getUser().then(u => {
-                if(u?.name) {
-                    const parts = u.name.split(' ');
-                    setUserInitials(parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : u.name.substring(0, 2).toUpperCase());
-                }
-            });
         }
     }, [isFocused]);
 
@@ -95,16 +86,10 @@ export default function ScannerScreen({ navigation }) {
                 const decryptedData = decryptPassData(data);
                 const parsedData = typeof decryptedData === 'string' ? JSON.parse(decryptedData) : decryptedData;
                 
-                if (parsedData && (parsedData.id || parsedData.pass_code)) {
-                    // Normalize standard pass data
-                    let code = String(parsedData.id || parsedData.pass_code || '').trim();
-                    console.log('[SCANNER] Detected Code before normalization:', code);
-                    
-                    if (!code.toUpperCase().startsWith('PASS_')) {
-                        code = `PASS_${code}`;
-                    }
-                    const passToNavigate = { ...parsedData, id: code.toUpperCase() };
-                    console.log('[SCANNER] Navigating with ID:', passToNavigate.id);
+                if (parsedData?.pass_code) {
+                    const passCode = String(parsedData.pass_code).trim().toUpperCase();
+                    const passToNavigate = { ...parsedData, id: passCode, pass_code: passCode };
+                    console.log('[SCANNER] Navigating with pass_code:', passToNavigate.pass_code);
                     navigation.navigate('ScanResult', { passData: passToNavigate });
                     return;
                 }
@@ -136,7 +121,7 @@ export default function ScannerScreen({ navigation }) {
             code = `PASS_${code}`;
         }
         
-        navigation.navigate('ScanResult', { passData: { id: code.toUpperCase() } });
+        navigation.navigate('ScanResult', { passData: { id: code.toUpperCase(), pass_code: code.toUpperCase() } });
         setManualCode('');
     };
 

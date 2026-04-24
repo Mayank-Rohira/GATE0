@@ -6,6 +6,12 @@ function generatePassCode() {
     return `PASS_${num}`;
 }
 
+function normalizePassCode(value) {
+    const normalized = String(value || '').replace(/[^a-zA-Z0-9_]/g, '').trim().toUpperCase();
+    if (!normalized) return '';
+    return normalized.startsWith('PASS_') ? normalized : `PASS_${normalized}`;
+}
+
 async function createPass(req, res) {
     const { service_name, visitor_name, visitor_mobile: rawMobile, category = 'guest', expected_time = null } = req.body;
     const visitor_mobile = normalizeMobile(rawMobile);
@@ -90,6 +96,10 @@ async function getResidentPasses(req, res) {
         return res.status(400).json({ error: 'Valid mobile number required' });
     }
 
+    if (mobile !== req.user.mobile) {
+        return res.status(403).json({ error: 'Cannot view other resident passes' });
+    }
+
     try {
         const result = await db.query(
             'SELECT * FROM passes WHERE resident_mobile = $1 ORDER BY created_at DESC',
@@ -108,6 +118,10 @@ async function getVisitorPasses(req, res) {
 
     if (!mobile) {
         return res.status(400).json({ error: 'Valid mobile number required' });
+    }
+
+    if (mobile !== req.user.mobile) {
+        return res.status(403).json({ error: 'Cannot view other visitor passes' });
     }
 
     try {
@@ -135,10 +149,9 @@ async function validatePass(req, res) {
     }
 
     try {
-        const normalizedCode = String(pass_code).trim().toUpperCase();
-        console.log(`[VALIDATION] Attempting to validate pass: "${normalizedCode}"`);
+        const normalizedCode = normalizePassCode(pass_code);
+        console.log(`[VALIDATION] Original: "${pass_code}" | Sanitized: "${normalizedCode}" | Length: ${normalizedCode.length}`);
 
-        // Defensive Query: Use TRIM and UPPER on stored data, and LEFT JOIN to handle potential data inconsistency
         const result = await db.query(
             `SELECT p.*, u.name AS resident_name
        FROM passes p
@@ -146,15 +159,11 @@ async function validatePass(req, res) {
        WHERE TRIM(UPPER(p.pass_code)) = $1`,
             [normalizedCode]
         );
+        
         const pass = result.rows[0];
 
         if (!pass) {
-            console.warn(`[VALIDATION_FAILURE] Pass not found in DB: "${normalizedCode}"`);
-            // Check if it exists at all without the join (for diagnostics)
-            const rawCheck = await db.query('SELECT id FROM passes WHERE TRIM(UPPER(pass_code)) = $1', [normalizedCode]);
-            if (rawCheck.rows.length > 0) {
-                console.error(`[VALIDATION_FAILURE] Pass "${normalizedCode}" exists but resident join failed!`);
-            }
+            console.warn(`[VALIDATION_FAILURE] Pass not found: "${normalizedCode}"`);
             return res.status(404).json({ valid: false, error: 'PASS NOT FOUND' });
         }
 
@@ -181,7 +190,7 @@ async function approvePass(req, res) {
     }
 
     try {
-        const normalizedCode = String(pass_code).trim().toUpperCase();
+        const normalizedCode = normalizePassCode(pass_code);
         const result = await db.query(
             `SELECT p.*, u.name AS resident_name
        FROM passes p
@@ -240,7 +249,7 @@ async function denyPass(req, res) {
     }
 
     try {
-        const normalizedCode = String(pass_code).trim().toUpperCase();
+        const normalizedCode = normalizePassCode(pass_code);
         const result = await db.query('SELECT id, status FROM passes WHERE TRIM(UPPER(pass_code)) = $1', [normalizedCode]);
         const pass = result.rows[0];
 
