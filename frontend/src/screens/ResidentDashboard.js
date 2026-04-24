@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, ScrollView, Platform, Animated as RNAnimated, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 import { API_BASE } from '../config/api';
 import { getToken, getUser } from '../hooks/useAuth';
 import usePolling from '../hooks/usePolling';
@@ -68,6 +69,7 @@ export default function ResidentDashboard({ navigation }) {
     const snapPoints = useMemo(() => ['50%'], []);
     const prevApprovedCount = useRef(0);
     const hasHydratedApprovedCount = useRef(false);
+    const isFocused = useIsFocused();
 
     const initUser = async () => {
         const u = await getUser();
@@ -82,8 +84,13 @@ export default function ResidentDashboard({ navigation }) {
             const u = await getUser();
             if (!token || !u) return;
 
-            const res = await fetch(`${API_BASE}/passes/resident/${u.mobile}`, {
-                headers: { Authorization: `Bearer ${token}` },
+            const res = await fetch(`${API_BASE}/passes/resident/${u.mobile}?ts=${Date.now()}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Cache-Control': 'no-cache',
+                    Pragma: 'no-cache'
+                },
+                cache: 'no-store',
             });
             const data = await res.json();
             if (data.passes) {
@@ -113,7 +120,13 @@ export default function ResidentDashboard({ navigation }) {
         }
     }, []);
 
-    usePolling(fetchPasses);
+    usePolling(fetchPasses, 3000, isFocused);
+
+    useEffect(() => {
+        if (isFocused) {
+            fetchPasses();
+        }
+    }, [isFocused, fetchPasses]);
 
     const onRefresh = async () => {
         setRefreshing(true);

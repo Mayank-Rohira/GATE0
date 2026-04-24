@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const db = require('../database/db');
+const repository = require('../database/repository');
 const { normalizeMobile } = require('../utils/utils');
 
 const SALT_ROUNDS = 10;
@@ -22,22 +22,25 @@ async function signup(req, res) {
     }
 
     try {
-        const existingResult = await db.query('SELECT id FROM users WHERE mobile = $1', [mobile]);
-        if (existingResult.rows.length > 0) {
+        const existingUser = await repository.findUserByMobile(mobile);
+        if (existingUser) {
             return res.status(409).json({ error: 'Mobile number already registered' });
         }
 
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-        const result = await db.query(
-            `INSERT INTO users (name, mobile, password_hash, role, house_number, society_name)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-            [name, mobile, passwordHash, role, house_number || '', society_name || '']
-        );
+        const user = await repository.createUser({
+            name,
+            mobile,
+            password_hash: passwordHash,
+            role,
+            house_number: house_number || '',
+            society_name: society_name || ''
+        });
 
         res.status(201).json({
             message: 'Account created successfully',
-            user: { id: result.rows[0].id, name, mobile, role }
+            user: { id: user.id, name, mobile, role }
         });
     } catch (err) {
         console.error('--- CRITICAL SIGNUP FAILURE ---');
@@ -61,8 +64,7 @@ async function login(req, res) {
     }
 
     try {
-        const result = await db.query('SELECT * FROM users WHERE mobile = $1', [mobile]);
-        const user = result.rows[0];
+        const user = await repository.findUserByMobile(mobile);
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid mobile or password' });

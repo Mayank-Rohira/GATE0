@@ -110,7 +110,7 @@ export default function ScannerScreen({ navigation }) {
                 setScanError(null);
                 setIsVerifying(false);
                 setScanned(false);
-            }, 2000); // 2s cooldown for same bad QR
+            }, 1000); // 1s cooldown for recovery
         }, 1200); // 1.2s synthetic delay
     }, [scanned, isVerifying, navigation]);
 

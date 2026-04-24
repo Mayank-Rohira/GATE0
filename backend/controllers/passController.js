@@ -1,4 +1,4 @@
-const db = require('../database/db');
+const repository = require('../database/repository');
 const { normalizeMobile } = require('../utils/utils');
 
 function generatePassCode() {
@@ -10,36 +10,6 @@ function normalizePassCode(value) {
     const normalized = String(value || '').replace(/[^a-zA-Z0-9_]/g, '').trim().toUpperCase();
     if (!normalized) return '';
     return normalized.startsWith('PASS_') ? normalized : `PASS_${normalized}`;
-}
-
-async function getPassByCode(passCode) {
-    const passResult = await db.query(
-        'SELECT * FROM passes WHERE TRIM(UPPER(pass_code)) = $1',
-        [passCode]
-    );
-
-    const pass = passResult.rows[0];
-    if (!pass) {
-        return null;
-    }
-
-    let residentName = 'Resident';
-    try {
-        const residentResult = await db.query(
-            'SELECT name FROM users WHERE mobile = $1 LIMIT 1',
-            [pass.resident_mobile]
-        );
-        if (residentResult.rows[0]?.name) {
-            residentName = residentResult.rows[0].name;
-        }
-    } catch (error) {
-        console.warn(`[RESIDENT_LOOKUP_FAILURE] pass_code="${passCode}"`, error.message);
-    }
-
-    return {
-        ...pass,
-        resident_name: residentName
-    };
 }
 
 async function createPass(req, res) {
@@ -61,11 +31,11 @@ async function createPass(req, res) {
         
         let codeExists = true;
         while (codeExists) {
-            const result = await db.query('SELECT id FROM passes WHERE pass_code = $1', [passCode]);
-            if (result.rows.length === 0) {
-                codeExists = false;
-            } else {
+            const exists = await repository.passCodeExists(passCode);
+            if (exists) {
                 passCode = generatePassCode();
+            } else {
+                codeExists = false;
             }
         }
 
@@ -75,41 +45,44 @@ async function createPass(req, res) {
             expiryAt = new Date(Date.now() + bufferMinutes * 60 * 1000);
         }
 
-        const insertResult = await db.query(
-            `INSERT INTO passes (pass_code, resident_mobile, visitor_mobile, visitor_name, service_name, house_number, society_name, category, expected_time, expiry_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-            [
-                passCode, req.user.mobile, visitor_mobile, visitor_name,
-                service_name, req.user.house_number, req.user.society_name,
-                category, expected_time, expiryAt
-            ]
-        );
+        const pass = await repository.createPass({
+            pass_code: passCode,
+            resident_mobile: req.user.mobile,
+            visitor_mobile,
+            visitor_name,
+            service_name,
+            house_number: req.user.house_number,
+            society_name: req.user.society_name,
+            category,
+            expected_time,
+            expiry_at: expiryAt
+        });
 
-        if (insertResult.rowCount > 0) {
+        if (pass?.id) {
             console.log(`✅ [DB_SUCCESS] Pass ${passCode} successfully saved to database.`);
         } else {
-            console.error(`❌ [DB_FAILURE] Insert query returned 0 rows for ${passCode}!`);
+            console.error(`❌ [DB_FAILURE] Create operation returned no pass for ${passCode}!`);
         }
-
-        const pass = { ...insertResult.rows[0], resident_name: req.user.name };
+        
+        const enrichedPass = { ...pass, resident_name: req.user.name };
 
         // Create a rich JSON schema for the QR Code to allow instant scanning
         const qrPayload = {
             id: passCode,
-            visitor_name: pass.visitor_name,
-            visitor_mobile: pass.visitor_mobile,
-            service_name: pass.service_name,
-            category: pass.category,
-            expiry_at: pass.expiry_at,
-            resident_name: pass.resident_name,
-            resident_mobile: pass.resident_mobile,
-            house_number: pass.house_number,
-            society_name: pass.society_name,
-            status: pass.status
+            visitor_name: enrichedPass.visitor_name,
+            visitor_mobile: enrichedPass.visitor_mobile,
+            service_name: enrichedPass.service_name,
+            category: enrichedPass.category,
+            expiry_at: enrichedPass.expiry_at,
+            resident_name: enrichedPass.resident_name,
+            resident_mobile: enrichedPass.resident_mobile,
+            house_number: enrichedPass.house_number,
+            society_name: enrichedPass.society_name,
+            status: enrichedPass.status
         };
 
         res.json({
-            ...pass,
+            ...enrichedPass,
             qrPayload
         });
     } catch (err) {
@@ -131,11 +104,8 @@ async function getResidentPasses(req, res) {
     }
 
     try {
-        const result = await db.query(
-            'SELECT * FROM passes WHERE resident_mobile = $1 ORDER BY created_at DESC',
-            [mobile]
-        );
-        res.json({ passes: result.rows });
+        const passes = await repository.getResidentPasses(mobile);
+        res.json({ passes });
     } catch (err) {
         console.error('Get Resident Passes Error:', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -155,16 +125,8 @@ async function getVisitorPasses(req, res) {
     }
 
     try {
-        const result = await db.query(
-            `SELECT p.*, u.name AS resident_name
-       FROM passes p
-       LEFT JOIN users u ON u.mobile = p.resident_mobile
-       WHERE p.visitor_mobile = $1
-       ORDER BY p.created_at DESC`,
-            [mobile]
-        );
-
-        res.json({ passes: result.rows });
+        const passes = await repository.getVisitorPasses(mobile);
+        res.json({ passes });
     } catch (err) {
         console.error('Get Passes Error:', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -182,7 +144,7 @@ async function validatePass(req, res) {
         const normalizedCode = normalizePassCode(pass_code);
         console.log(`[VALIDATION] Original: "${pass_code}" | Sanitized: "${normalizedCode}" | Length: ${normalizedCode.length}`);
 
-        const pass = await getPassByCode(normalizedCode);
+        const pass = await repository.getPassByCode(normalizedCode);
 
         if (!pass) {
             console.warn(`[VALIDATION_FAILURE] Pass not found: "${normalizedCode}"`);
@@ -213,7 +175,7 @@ async function approvePass(req, res) {
 
     try {
         const normalizedCode = normalizePassCode(pass_code);
-        const pass = await getPassByCode(normalizedCode);
+        const pass = await repository.getPassByCode(normalizedCode);
 
         if (!pass) {
             return res.status(404).json({ error: 'Pass not found' });
@@ -223,33 +185,12 @@ async function approvePass(req, res) {
             return res.status(400).json({ error: 'Pass already approved' });
         }
 
-        // Use transaction for atomic approval and logging
-        const client = await db.getClient();
-        try {
-            await client.query('BEGIN');
-            
-            const updateResult = await client.query(
-                'UPDATE passes SET status = $1 WHERE id = $2 RETURNING *',
-                ['approved', pass.id]
-            );
-
-            const logResult = await client.query(
-                `INSERT INTO guard_logs (pass_id, guard_mobile, visitor_name, visitor_mobile, resident_name, service_name, house_number, society_name)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-                [
-                    pass.id, req.user.mobile, pass.visitor_name, pass.visitor_mobile,
-                    pass.resident_name, pass.service_name, pass.house_number, pass.society_name
-                ]
-            );
-
-            await client.query('COMMIT');
-            res.json({ success: true, pass: updateResult.rows[0], logId: logResult.rows[0].id });
-        } catch (err) {
-            await client.query('ROLLBACK');
-            throw err;
-        } finally {
-            client.release();
+        const approval = await repository.approvePass(normalizedCode, req.user.mobile);
+        if (!approval) {
+            return res.status(404).json({ error: 'Pass not found' });
         }
+
+        res.json({ success: true, pass: approval.pass, logId: approval.logId });
     } catch (err) {
         console.error('Approval Error:', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -265,8 +206,7 @@ async function denyPass(req, res) {
 
     try {
         const normalizedCode = normalizePassCode(pass_code);
-        const result = await db.query('SELECT id, status FROM passes WHERE TRIM(UPPER(pass_code)) = $1', [normalizedCode]);
-        const pass = result.rows[0];
+        const pass = await repository.getPassByCode(normalizedCode);
 
         if (!pass) {
             return res.status(404).json({ error: 'Pass not found' });
@@ -276,7 +216,7 @@ async function denyPass(req, res) {
             return res.status(400).json({ error: 'Cannot deny an already approved pass' });
         }
 
-        await db.query('DELETE FROM passes WHERE id = $1', [pass.id]);
+        await repository.denyPass(normalizedCode);
         res.json({ success: true, message: 'Pass denied and removed' });
     } catch (err) {
         console.error('Denial Error:', err);

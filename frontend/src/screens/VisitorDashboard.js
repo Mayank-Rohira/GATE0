@@ -3,6 +3,7 @@ import { View, Text, SectionList, RefreshControl, Platform, TouchableOpacity, Mo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
 import QRCode from 'react-native-qrcode-svg';
+import { useIsFocused } from '@react-navigation/native';
 import { API_BASE } from '../config/api';
 import { getToken, getUser } from '../hooks/useAuth';
 import { encryptPassData } from '../utils/crypto';
@@ -43,6 +44,7 @@ export default function VisitorDashboard({ navigation }) {
     const [refreshing, setRefreshing] = useState(false);
     const [user, setUserData] = useState(null);
     const [selectedPass, setSelectedPass] = useState(null);
+    const isFocused = useIsFocused();
 
     useEffect(() => {
         getUser().then(setUserData);
@@ -61,8 +63,13 @@ export default function VisitorDashboard({ navigation }) {
             const u = await getUser();
             if (!token || !u) return;
 
-            const res = await fetch(`${API_BASE}/passes/visitor/${u.mobile}`, {
-                headers: { Authorization: `Bearer ${token}` },
+            const res = await fetch(`${API_BASE}/passes/visitor/${u.mobile}?ts=${Date.now()}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Cache-Control': 'no-cache',
+                    Pragma: 'no-cache'
+                },
+                cache: 'no-store',
             });
             const data = await res.json();
             if (data && Array.isArray(data.passes)) {
@@ -78,7 +85,13 @@ export default function VisitorDashboard({ navigation }) {
         } catch (err) { }
     }, [selectedPass]);
 
-    usePolling(fetchPasses);
+    usePolling(fetchPasses, 3000, isFocused);
+
+    useEffect(() => {
+        if (isFocused) {
+            fetchPasses();
+        }
+    }, [isFocused, fetchPasses]);
 
     const onRefresh = async () => {
         setRefreshing(true);

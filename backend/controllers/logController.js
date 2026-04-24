@@ -1,4 +1,4 @@
-const db = require('../database/db');
+const repository = require('../database/repository');
 
 async function getGuardLogs(req, res) {
     const guardMobile = req.params.guard_id;
@@ -11,26 +11,17 @@ async function getGuardLogs(req, res) {
     const maxResults = parseInt(limit, 10) || 100;
 
     try {
-        let queryStr = 'SELECT * FROM guard_logs WHERE guard_mobile = $1';
-        const params = [guardMobile];
+        const logs = await repository.getGuardLogs(guardMobile, date, maxResults);
 
-        if (date) {
-            // PostgreSQL DATE() or ::date works
-            queryStr += " AND timestamp::date = $2";
-            params.push(date);
-        }
-
-        queryStr += ' ORDER BY timestamp DESC LIMIT $' + (params.length + 1);
-        params.push(maxResults);
-
-        const result = await db.query(queryStr, params);
-        const logs = result.rows;
-
-        const formatted = logs.map(log => ({
-            ...log,
-            date: log.timestamp ? log.timestamp.toISOString().split('T')[0] : null,
-            time: log.timestamp ? formatTime(log.timestamp) : null
-        }));
+        const formatted = logs.map(log => {
+            const timestamp = log.timestamp ? new Date(log.timestamp) : null;
+            const isValid = timestamp && !isNaN(timestamp.getTime());
+            return {
+                ...log,
+                date: isValid ? timestamp.toISOString().split('T')[0] : null,
+                time: isValid ? formatTime(timestamp) : null
+            };
+        });
 
         res.json({ logs: formatted });
     } catch (err) {

@@ -125,7 +125,7 @@ export default function CreatePassScreen({ navigation }) {
                                 size={260}
                                 color="#000000"
                                 backgroundColor="#ffffff"
-                                ecl="H"
+                                ecl="M"
                                 quietZone={20}
                             />
                         </View>
