@@ -18,7 +18,7 @@ async function getGuardLogs(req, res) {
             const isValid = timestamp && !isNaN(timestamp.getTime());
             return {
                 ...log,
-                date: isValid ? timestamp.toISOString().split('T')[0] : null,
+                date: isValid ? timestamp.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) : null,
                 time: isValid ? formatTime(timestamp) : null
             };
         });
@@ -34,7 +34,8 @@ function formatTime(timestamp) {
     const d = new Date(timestamp);
     if (isNaN(d.getTime())) return null;
     return d.toLocaleTimeString('en-IN', {
-        hour: '2-digit', minute: '2-digit', hour12: true
+        hour: '2-digit', minute: '2-digit', hour12: true,
+        timeZone: 'Asia/Kolkata'
     });
 }
 
@@ -56,7 +57,7 @@ async function getResidentLogs(req, res) {
             const isValid = timestamp && !isNaN(timestamp.getTime());
             return {
                 ...log,
-                date: isValid ? timestamp.toISOString().split('T')[0] : null,
+                date: isValid ? timestamp.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }) : null,
                 time: isValid ? formatTime(timestamp) : null
             };
         });
